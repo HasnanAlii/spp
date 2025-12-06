@@ -1,0 +1,167 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Keuangan;
+use App\Models\Pembayaran;
+use App\Models\Siswa;
+use App\Models\SppSiswa;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class PembayaranController extends Controller
+{
+    /**
+     * INDEX (Admin melihat seluruh transaksi)
+     */
+    public function index()
+    {
+        $pembayarans = Pembayaran::with(['siswa', 'sppSiswa'])
+                                 ->latest()
+                                 ->get();
+
+        return view('admin.pembayaran.index', compact('pembayarans'));
+    }
+
+    /**
+     * FORM CREATE PEMBAYARAN
+     */
+    public function create()
+    {
+        return view('admin.pembayaran.create', [
+            'siswas' => Siswa::with('user')->get()
+        ]);
+    }
+
+    /**
+     * AJAX - Ambil Tagihan SPP Siswa Yang Belum Lunas
+     */
+public function getTagihan($siswa_id)
+{
+    $tagihan = SppSiswa::where('siswa_id', $siswa_id)
+        ->where('sisa_tagihan', '>', 0)
+        ->get();
+
+    return response()->json([
+        'tagihan' => $tagihan
+    ]);
+}
+
+
+    /**
+     * SIMPAN TRANSAKSI PEMBAYARAN
+     */
+public function store(Request $request)
+{
+    $request->validate([
+        'siswa_id'      => 'required|exists:siswas,id',
+        'spp_siswa_id'  => 'required|exists:spp_siswas,id',
+        'nominal_bayar' => 'required|numeric|min:1',
+    ]);
+
+    // Ambil data tagihan
+    $tagihan = SppSiswa::findOrFail($request->spp_siswa_id);
+
+    // Kurangi sisa tagihan
+    $tagihan->sisa_tagihan -= $request->nominal_bayar;
+
+    // Jika lunas
+    if ($tagihan->sisa_tagihan <= 0) {
+        $tagihan->sisa_tagihan = 0;
+        $tagihan->status = 'lunas';
+    }
+
+    $tagihan->save();
+
+    // Simpan transaksi pembayaran
+    $pembayaran = Pembayaran::create([
+        'siswa_id'      => $request->siswa_id,
+        'spp_siswa_id'  => $request->spp_siswa_id,
+        'jumlah_bayar'  => $request->nominal_bayar,
+        'tanggal_bayar' => $request->tanggal ?? now(),
+        'keterangan'    => $request->keterangan
+    ]);
+
+    // === TAMBAHKAN KE TABEL KEUANGAN ===
+    Keuangan::create([
+        'id_pembayaran' => $pembayaran->id,
+        'jumlah'        => $request->nominal_bayar,
+        'keterangan'    => "Pembayaran SPP - " . $tagihan->nama_spp,
+        'arus_dana'     => 'masuk',
+    ]);
+
+    return redirect()->route('pembayaran.index')
+        ->with('success', 'Pembayaran berhasil dicatat & dicatat ke laporan keuangan.');
+}
+
+    /**
+     * DETAIL PEMBAYARAN
+     */
+    public function show(Pembayaran $pembayaran)
+    {
+        $pembayaran->load(['siswa', 'sppSiswa']);
+        return view('admin.pembayaran.show', compact('pembayaran'));
+    }
+
+    /**
+     * EDIT PEMBAYARAN
+     */
+    public function edit(Pembayaran $pembayaran)
+    {
+        return view('admin.pembayaran.edit', [
+            'pembayaran' => $pembayaran,
+            'siswas'     => Siswa::all()
+        ]);
+    }
+
+    /**
+     * UPDATE DATA PEMBAYARAN
+     */
+    public function update(Request $request, Pembayaran $pembayaran)
+    {
+        $request->validate([
+            'nominal_bayar' => 'required|numeric|min:1',
+            'tanggal'       => 'required|date',
+            'keterangan'    => 'nullable|string'
+        ]);
+
+        $pembayaran->update($request->only([
+            'nominal_bayar',
+            'tanggal',
+            'keterangan'
+        ]));
+
+        return redirect()->route('pembayaran.index')
+                         ->with('success', 'Data pembayaran berhasil diperbarui.');
+    }
+
+    /**
+     * HAPUS PEMBAYARAN
+     */
+    public function destroy(Pembayaran $pembayaran)
+    {
+        $pembayaran->delete();
+
+        return redirect()->route('pembayaran.index')
+                         ->with('success', 'Transaksi pembayaran berhasil dihapus.');
+    }
+
+    /**
+     * RIWAYAT PEMBAYARAN UNTUK SISWA
+     */
+    public function historySiswa()
+    {
+        $siswa = Auth::user()->siswa;
+
+        if (!$siswa) {
+            abort(404, 'Data siswa tidak ditemukan');
+        }
+
+        $pembayarans = Pembayaran::with('sppSiswa')
+                                 ->where('siswa_id', $siswa->id)
+                                 ->latest()
+                                 ->get();
+
+        return view('siswa.pembayaran.index', compact('pembayarans'));
+    }
+}
