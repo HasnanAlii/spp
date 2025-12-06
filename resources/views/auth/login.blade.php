@@ -1,49 +1,63 @@
 <x-guest-layout>
+
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+    <div class="max-w-md mx-auto bg-white shadow-lg rounded-2xl p-8 border border-gray-200">
 
-        <!-- NIS -->
-        <div>
-            <x-input-label for="nis" :value="__('NIS')" />
-            <x-text-input id="nis" class="block mt-1 w-full"
-                          type="text"
-                          name="nis"
-                          :value="old('nis')"
-                          required autofocus autocomplete="username" />
+        <h2 class="text-2xl font-bold text-center text-blue-700 mb-6">
+            Login Sistem Cek SPP
+        </h2>
 
-            <x-input-error :messages="$errors->get('nis')" class="mt-2" />
-        </div>
+        <form method="POST" action="{{ route('login') }}">
+            @csrf
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+            {{-- NIS --}}
+            <div class="mb-4">
+                <x-input-label for="nis" :value="'NIS Siswa'" class="font-semibold text-gray-700" />
+                
+                <x-text-input 
+                    id="nis"
+                    class="block mt-1 w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    type="text"
+                    name="nis"
+                    placeholder="Masukkan NIS Anda"
+                    :value="old('nis')"
+                    required 
+                    autofocus 
+                    autocomplete="username" 
+                />
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
+                <x-input-error :messages="$errors->get('nis')" class="mt-2" />
+            </div>
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+            {{-- Password --}}
+            <div class="mb-4">
+                <x-input-label for="password" :value="'Password'" class="font-semibold text-gray-700" />
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox"
-                       class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-                       name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
+                <x-text-input 
+                    id="password"
+                    class="block mt-1 w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    type="password"
+                    name="password"
+                    placeholder="Masukkan Password"
+                    required
+                    autocomplete="current-password"
+                />
 
-        <div class="flex items-center justify-end mt-4">
+                <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            </div>
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
+ 
+
+            {{-- Tombol --}}
+            <div class="mt-6">
+                <x-primary-button class="w-full flex justify-center py-3 text-lg bg-blue-600 hover:bg-blue-700">
+                    Masuk
+                </x-primary-button>
+            </div>
+
+        </form>
+    </div>
+
 </x-guest-layout>

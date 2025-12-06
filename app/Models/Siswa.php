@@ -12,7 +12,7 @@ class Siswa extends Model
 
     
     protected $fillable = [
-        'nama', 'kelas', 'telp', 'status', 'jenis_kelamin',
+        'nama','user_id', 'kelas', 'telp', 'status', 'jenis_kelamin',
         'tanggal_lahir', 'alamat', 'telp_orangtua', 'angkatan'
     ];
 
@@ -25,10 +25,11 @@ class Siswa extends Model
     {
         return $this->hasMany(Pembayaran::class, 'id_siswa');
     }
-public function user()
-{
-    return $this->hasOne(User::class, 'name', 'nama');
-}
+    public function user()
+    {
+        return $this->hasOne(User::class, 'name', 'nama');
+    }
+
 
 
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Siswa;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,47 +15,58 @@ class ProfileController extends Controller
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
+public function edit()
+{
+    $user = auth::user();
+
+    // Ambil data siswa yang user_id = auth()->id()
+    $siswa = Siswa::where('user_id', $user->id)->first();
+
+    return view('profile.edit', compact(
+        'user' ,
+        'siswa' ));
+}
+
+    public function updateAkun(Request $request)
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'password' => 'nullable|min:6',
         ]);
-    }
 
-    /**
-     * Update the user's profile information.
-     */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
-    {
-        $request->user()->fill($request->validated());
+        $user = Auth::user();
+        $user->name = $request->name;
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($request->filled('password')) {
+            $user->password = bcrypt($request->password);
         }
 
-        $request->user()->save();
+        $user->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return back()->with('status', 'profile-updated');
     }
 
     /**
-     * Delete the user's account.
+     * Update Biodata Siswa
      */
-    public function destroy(Request $request): RedirectResponse
+    public function updateSiswa(Request $request)
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
+        $request->validate([
+            'telp' => 'required|string',
+            'telp_orangtua' => 'required|string',
+            'alamat' => 'nullable|string',
         ]);
 
-        $user = $request->user();
+        $siswa = Siswa::where('user_id', Auth::id())->firstOrFail();
 
-        Auth::logout();
+        $siswa->update([
+            'telp' => $request->telp,
+            'telp_orangtua' => $request->telp_orangtua,
+            'alamat' => $request->alamat,
+        ]);
 
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
+        return back()->with('status', 'siswa-updated');
     }
+
+
 }

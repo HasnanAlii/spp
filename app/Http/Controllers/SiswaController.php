@@ -6,6 +6,7 @@ use App\Models\Siswa;
 use App\Models\SppSiswa;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class SiswaController extends Controller
@@ -33,15 +34,12 @@ class SiswaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            // Data siswa
             'nama' => 'required|string|max:255',
             'kelas' => 'required|string|max:50',
             'telp' => 'required|string|max:20',
             'nis' => 'required|string|unique:users,nis',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
+            'password' => 'nullable|min:6',
 
-            // tambahan opsional
             'jenis_kelamin' => 'nullable|string|max:1',
             'tanggal_lahir' => 'nullable|date',
             'alamat' => 'nullable|string',
@@ -49,9 +47,15 @@ class SiswaController extends Controller
             'angkatan' => 'nullable|string|max:10',
         ]);
 
-        // 1️⃣ Simpan siswa
+        $user = User::create([
+            'name' => $request->nama,
+            'password' => Hash::make($request->password),
+            'nis' => $request->nis,    
+            // 'id' => $siswa->id,
+        ]);
         $siswa = Siswa::create([
             'nama' => $request->nama,
+            'user_id' => $user->id,
             'kelas' => $request->kelas,
             'telp' => $request->telp,
             'status' => $request->status ?? 'aktif',
@@ -62,45 +66,34 @@ class SiswaController extends Controller
             'angkatan' => $request->angkatan,
         ]);
 
-        // 2️⃣ Simpan user dan hubungkan ke siswa via siswa_id
-        $user = User::create([
-            'name' => $request->nama,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'nis' => $request->nis,
-            'siswa_id' => $siswa->id,
-        ]);
 
-        // 3️⃣ Tambahkan role Spatie
         $user->assignRole('siswa');
 
         return redirect()->route('siswa.index')
             ->with('success', 'Data siswa & akun berhasil ditambahkan');
     }
 
-    /**
-     * Detail siswa + relasi user + semua SPP siswa
-     */
-public function show(Siswa $siswa)
-{
-    // load relasi user
-    $siswa->load('user');
 
-    // Ambil semua tagihan SPP siswa
-    $sppSiswa = SppSiswa::with('master')
-        ->where('siswa_id', $siswa->id)
-        ->get();
+    public function show(Siswa $siswa)
+    {
+        // load relasi user
+        $siswa->load('user');
 
-    // Hitung total seluruh sisa tagihan
-    $totalSisa = $sppSiswa->sum('sisa_tagihan');
+        // Ambil semua tagihan SPP siswa
+        $sppSiswa = SppSiswa::with('master')
+            ->where('siswa_id', $siswa->id)
+            ->get();
 
-    return view('admin.siswa.show', [
-        'siswa' => $siswa,
-        'user' => $siswa->user,
-        'sppSiswa' => $sppSiswa,
-        'totalSisa' => $totalSisa
-    ]);
-}
+        // Hitung total seluruh sisa tagihan
+        $totalSisa = $sppSiswa->sum('sisa_tagihan');
+
+        return view('admin.siswa.show', [
+            'siswa' => $siswa,
+            'user' => $siswa->user,
+            'sppSiswa' => $sppSiswa,
+            'totalSisa' => $totalSisa
+        ]);
+    }
 
     /**
      * Form edit siswa
@@ -112,6 +105,29 @@ public function show(Siswa $siswa)
         return view('admin.siswa.edit', [
             'siswa' => $siswa,
             'user' => $siswa->user
+        ]);
+    }
+
+    public function profile()
+    {
+        // pastikan user login punya relasi siswa
+        $siswa = Siswa::where('id', Auth::user()->id)
+            ->with('user')
+            ->firstOrFail();
+
+        // Ambil semua tagihan SPP siswa ini
+        $sppSiswa = SppSiswa::with('master')
+            ->where('siswa_id', $siswa->id)
+            ->get();
+
+        // Hitung total seluruh sisa tagihan
+        $totalSisa = $sppSiswa->sum('sisa_tagihan');
+
+        return view('siswa.profile', [
+            'siswa' => $siswa,
+            'user' => $siswa->user,
+            'sppSiswa' => $sppSiswa,
+            'totalSisa' => $totalSisa,
         ]);
     }
 
@@ -127,8 +143,8 @@ public function show(Siswa $siswa)
             'kelas' => 'required|string|max:50',
             'telp' => 'required|string|max:20',
 
-            'nis' => 'required|string|unique:users,nis,' . ($user->id ?? 0),
-            'email' => 'required|email|unique:users,email,' . ($user->id ?? 0),
+            'name' => 'required|string|max:255',
+            'nis' => 'required|string' ,
             'password' => 'nullable|min:6',
 
             'jenis_kelamin' => 'nullable|string|max:1',
@@ -155,7 +171,6 @@ public function show(Siswa $siswa)
         if ($user) {
             $user->update([
                 'name' => $request->nama,
-                'email' => $request->email,
                 'nis' => $request->nis,
             ]);
 

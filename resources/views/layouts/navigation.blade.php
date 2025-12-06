@@ -10,8 +10,13 @@
                     <x-application-logo class="h-8 w-8 text-blue-600" />
                 </div>
                 <div>
-                    <span class="block text-lg font-bold text-gray-800 tracking-tight">Sistem Sekolah</span>
+                  <span class="block text-lg font-bold text-gray-800 tracking-tight">E-Cek SPP</span>
+                    @hasrole('admin')
                     <span class="block text-xs text-gray-400 font-medium uppercase tracking-wider">Admin Panel</span>
+                    @endhasrole
+                    @hasrole('siswa')
+                    <span class="block text-xs text-gray-400 font-medium uppercase tracking-wider">Siswa Panel</span>
+                    @endhasrole
                 </div>
             </div>
 
@@ -19,19 +24,19 @@
             <div class="px-4 mt-2">
                 <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menu</p>
                 <ul class="space-y-1">
-
                     <li>
                         <a href="{{ route('dashboard') }}"
-                            class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group
-                            {{ request()->routeIs('dashboard') 
+                        class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group
+                        {{ request()->routeIs('dashboard') 
                                 ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
                                 : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600' }}">
                             <i data-feather="grid" 
-                               class="w-5 h-5 {{ request()->routeIs('dashboard') ? 'text-white' : 'text-gray-400 group-hover:text-blue-600' }}"></i>
+                            class="w-5 h-5 {{ request()->routeIs('dashboard') ? 'text-white' : 'text-gray-400 group-hover:text-blue-600' }}"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
-
+                    
+                    @hasrole('admin')
                     <li>
                         <a href="{{ route('siswa.index') }}"
                             class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group
@@ -78,47 +83,61 @@
                             <span>Keuangan</span>
                         </a>
                     </li>
+                    @endhasrole
+                    @hasrole('siswa')
+   
+                    <li>
+                        <a href="{{ route('siswas.index') }}"
+                            class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group
+                            {{ request()->routeIs('siswas.*') 
+                                ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
+                                : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600' }}">
+                            
+                            <i data-feather="file-text" class="w-5 h-5 {{ request()->routeIs('siswas.*') ? 'text-white' : 'text-gray-400 group-hover:text-blue-600' }}"></i>
+                            <span>SPP</span>
+                        </a>
+                    </li>
+
+                    @endhasrole
+
+
 
                 </ul>
             </div>
         </div>
-        <div class="p-4 border-t border-gray-200 bg-gray-50">
+     <!-- BAGIAN BAWAH -->
+        <div class="p-4 border-t border-gray-100 bg-gray-50 ">
 
-            {{-- User Info --}}
-            <div class="flex items-center gap-3 mb-4 px-2">
-                <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center 
+            <div class="flex items-center gap-4 mb-4 px-2">
+                <div class="h-12 w-12 rounded-full bg-white border border-blue-100 shadow flex items-center justify-center 
                             text-blue-600 font-bold text-lg uppercase">
                     {{ substr(Auth::user()->name, 0, 1) }}
                 </div>
 
                 <div class="overflow-hidden leading-tight">
-                    <div class="font-semibold text-gray-800 truncate text-sm">
-                        {{ Auth::user()->name }}
-                    </div>
-                    <div class="text-xs text-gray-500 truncate">
-                        {{ Auth::user()->email }}
-                    </div>
+                    <div class="font-bold text-gray-800 truncate text-base">{{ Auth::user()->name }}</div>
+                    <div class="text-sm text-gray-500 truncate">{{ Auth::user()->email }}</div>
                 </div>
             </div>
 
-            {{-- Tombol Profile --}}
-            <a href="{{ route('profile.edit') }}"
-            class="flex items-center w-full px-4 py-2 mb-2 text-sm font-medium text-gray-700 bg-white border border-gray-200
-                    rounded-lg hover:bg-gray-100 hover:text-gray-900 transition justify-center">
-                <i data-feather="user" class="w-4 h-4 mr-2"></i>
-                Profile
-            </a>
+            <div class="grid grid-cols-2 gap-3">
+                <a href="{{ route('profile.edit') }}"
+                   class="flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-200
+                          rounded-lg hover:bg-gray-100 hover:text-blue-600 hover:border-gray-300 transition">
+                    <i data-feather="user" class="w-4 h-4 mr-2"></i>
+                    Profile
+                </a>
 
-            {{-- Tombol Logout --}}
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button
-                    class="flex items-center w-full px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200
-                        rounded-lg hover:bg-red-50 hover:text-red-700 transition justify-center">
-                    <i data-feather="log-out" class="w-4 h-4 mr-2"></i>
-                    Logout
-                </button>
-            </form>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button
+                        class="flex items-center justify-center w-full px-4 py-2.5 text-sm font-semibold text-red-600 bg-white border border-red-200
+                               rounded-lg hover:bg-red-50 hover:text-red-700 hover:border-red-300 transition">
+                        <i data-feather="log-out" class="w-4 h-4 mr-2"></i>
+                        Logout
+                    </button>
+                </form>
+            </div>
 
         </div>
 
@@ -127,7 +146,5 @@
 
 
 
-{{-- CONTENT WRAPPER --}}
-<div class="ml-64 transition-all duration-300">
-    {{-- Slot konten di sini --}}
-</div>
+
+

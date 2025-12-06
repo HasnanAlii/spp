@@ -7,6 +7,9 @@ use App\Models\SppSiswa;
 use App\Models\Siswa;
 use App\Models\Spp;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
 
 class SppController extends Controller
 {
@@ -41,7 +44,7 @@ public function store(Request $request)
         'tahun_ajaran' => 'nullable|string'
     ]);
 
-    // 1. Simpan SEBAGAI TEMPLATE ke spp_master
+    // 1. Simpan sebagai template
     $sppMaster = Spp::create([
         'nama_spp' => $request->nama_spp,
         'tipe' => $request->tipe,
@@ -50,15 +53,14 @@ public function store(Request $request)
         'kelas' => $request->kelas,
     ]);
 
-    // 2. Ambil semua siswa di kelas tersebut
+    // 2. Ambil seluruh siswa terkait kelas
     $siswaList = Siswa::where('kelas', $request->kelas)->get();
 
-    // 3. Loop setiap siswa & buat SPP siswa
     foreach ($siswaList as $siswa) {
 
+        // 3. Simpan tagihan SPP siswa
         SppSiswa::create([
             'siswa_id' => $siswa->id,
-            // 'spp_master_id' => $sppMaster->id,
             'nama_spp' => $request->nama_spp,
             'tipe' => $request->tipe,
             'total_tagihan' => $request->nominal,
@@ -66,13 +68,45 @@ public function store(Request $request)
             'status' => 'belum lunas',
             'tahun_ajaran' => $request->tahun_ajaran,
         ]);
+
+        // 4. Kirim Whatsapp Fonnte
+        if (!empty($siswa->telp)) {
+
+            // pastikan format 62xxxx
+            $nomor = preg_replace('/^0/', '62', $siswa->telp);
+
+            $pesan = 
+                "Pemberitahuan Tagihan SPP 📢
+
+Nama: *{$siswa->nama}*
+Kelas: *{$siswa->kelas}*
+
+Tagihan: *{$request->nama_spp} ({$request->tipe})*
+Jumlah: *Rp " . number_format($request->nominal, 0, ',', '.') . "*
+Status: *Belum Lunas*
+
+Silakan melakukan pembayaran kepada pihak sekolah.
+Terima kasih 🙏";
+
+            $response = Http::withHeaders([
+                'Authorization' => 'L9PaGYokqbue5GHechJR',
+            ])->post('https://api.fonnte.com/send', [
+                'target' => $nomor,
+                'message' => $pesan,
+                'countryCode' => '62',
+            ]);
+
+            // Log::info("Fonnte response siswa {$siswa->id}:", $response->json());
+        }
     }
 
     return redirect()->route('spp.index')->with(
         'success',
-        'SPP berhasil ditambahkan untuk seluruh siswa kelas ' . $request->kelas
+        'SPP berhasil ditambahkan & pemberitahuan dikirim ke seluruh siswa kelas ' . $request->kelas
     );
 }
+
+
 
 public function destroy($id)
 {

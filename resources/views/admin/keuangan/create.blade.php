@@ -95,10 +95,10 @@
                                         <span class="text-gray-500 font-bold">Rp</span>
                                     </div>
                                  <input type="text" id="jumlah_display"
-       class="pl-12 block w-full border-gray-300 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 py-3 font-bold text-gray-800 text-lg transition"
-       placeholder="0" required>
+                                    class="pl-12 block w-full border-gray-300 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 py-3 font-bold text-gray-800 text-lg transition"
+                                    placeholder="0" required>
 
-<input type="hidden" name="jumlah" id="jumlah">
+                                 <input type="hidden" name="jumlah" id="jumlah">
 
                                 </div>
                                 @error('jumlah')

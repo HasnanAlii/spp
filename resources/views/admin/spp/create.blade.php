@@ -97,9 +97,12 @@
                                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                         <span class="text-gray-500 sm:text-sm font-bold">Rp</span>
                                     </div>
-                                    <input type="number" name="nominal" 
+                                   <input type="text" id="nominalFormatted" 
                                         class="w-full rounded-xl border-gray-300 pl-10 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition duration-150 ease-in-out" 
                                         placeholder="0" required>
+
+                                    <input type="hidden" name="nominal" id="nominalReal">
+
                                 </div>
                             </div>
 
@@ -170,4 +173,19 @@
             });
         });
     </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const inputFormatted = document.getElementById('nominalFormatted');
+        const inputReal = document.getElementById('nominalReal');
+
+        inputFormatted.addEventListener('input', function(e) {
+            let value = this.value.replace(/\D/g, ""); // hanya angka
+            inputReal.value = value; // simpan angka asli untuk dikirim ke server
+
+            // Format ribuan
+            this.value = new Intl.NumberFormat('id-ID').format(value);
+        });
+    });
+    </script>
+
 </x-app-layout>

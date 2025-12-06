@@ -59,7 +59,7 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-1">Nomor Telepon</label>
                                     <input type="tel" name="telp" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition duration-150 ease-in-out" 
-                                           value="{{ old('telp') }}" placeholder="Masukan dalam format 62858.." required>
+                                           value="{{ old('telp') }}" placeholder="Masukan Nomor" required>
                                     @error('telp') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                 </div>
 
@@ -99,7 +99,7 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-1">Telepon Orang Tua</label>
                                     <input type="text" name="telp_orangtua" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition duration-150 ease-in-out" 
-                                           value="{{ old('telp_orangtua') }}" placeholder="Masukan dalam format 62858..">
+                                           value="{{ old('telp_orangtua') }}" placeholder="Masukan Nomor">
                                 </div>
 
                                 {{-- ANGKATAN --}}

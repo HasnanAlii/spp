@@ -97,7 +97,7 @@ class SiswaSeeder extends Seeder
                 'alamat' => $data['alamat'],
                 'telp_orangtua' => $data['telp_orangtua'],
                 'angkatan' => $data['angkatan'],
-                // 'user_id' => $user->id, // relasi user
+                'user_id' => $user->id, // relasi user
             ]);
 
             $counter++;
