@@ -16,6 +16,10 @@ class Pembayaran extends Model
         'metode',
         'keterangan'
     ];
+    
+    protected $casts = [
+        'tanggal_bayar' => 'date', 
+    ];
 
     public function siswa()
     {

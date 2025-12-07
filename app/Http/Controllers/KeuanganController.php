@@ -3,20 +3,66 @@
 namespace App\Http\Controllers;
 
 use App\Models\Keuangan;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class KeuanganController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $keuangans = Keuangan::latest()->get();
-        
-        // Contoh sederhana menghitung saldo
-        $pemasukan = Keuangan::where('arus_dana', 'masuk')->sum('jumlah');
-        $pengeluaran = Keuangan::where('arus_dana', 'keluar')->sum('jumlah');
-        $saldo = $pemasukan - $pengeluaran;
+        $baseQuery = Keuangan::query();
 
-        return view('admin.keuangan.index', compact('keuangans', 'saldo'));
+        if ($request->filter == 'harian') {
+            $baseQuery->whereDate('created_at', today());
+        } elseif ($request->filter == 'bulanan') {
+            $baseQuery->whereYear('created_at', date('Y'))
+                    ->whereMonth('created_at', date('m'));
+        } elseif ($request->filter == 'tahunan') {
+            $baseQuery->whereYear('created_at', date('Y'));
+        }
+
+        $summaryQuery = clone $baseQuery;
+
+        $keuangans = $baseQuery->latest()->paginate(10)->withQueryString();
+
+        $pemasukan   = (clone $summaryQuery)->where('arus_dana', 'masuk')->sum('jumlah');
+        $pengeluaran = (clone $summaryQuery)->where('arus_dana', 'keluar')->sum('jumlah');
+        $saldo       = $pemasukan - $pengeluaran;
+
+        return view('admin.keuangan.index', compact('keuangans', 'pemasukan', 'pengeluaran', 'saldo'));
+    }
+
+
+    public function exportPdf(Request $request)
+    {
+        $baseQuery = Keuangan::query();
+
+        // Terapkan filter sama seperti index
+        if ($request->filter == 'harian') {
+            $baseQuery->whereDate('created_at', today());
+        } elseif ($request->filter == 'bulanan') {
+            $baseQuery->whereYear('created_at', date('Y'))
+                    ->whereMonth('created_at', date('m'));
+        } elseif ($request->filter == 'tahunan') {
+            $baseQuery->whereYear('created_at', date('Y'));
+        }
+
+        $keuangans = $baseQuery->orderBy('created_at', 'DESC')->get();
+
+        $pemasukan   = (clone $baseQuery)->where('arus_dana', 'masuk')->sum('jumlah');
+        $pengeluaran = (clone $baseQuery)->where('arus_dana', 'keluar')->sum('jumlah');
+        $saldo       = $pemasukan - $pengeluaran;
+
+        // Render tampilan khusus untuk PDF
+        $pdf = Pdf::loadView('admin.keuangan.pdf', [
+            'keuangans'   => $keuangans,
+            'pemasukan'   => $pemasukan,
+            'pengeluaran' => $pengeluaran,
+            'saldo'       => $saldo,
+            'filter'      => $request->filter
+        ])->setPaper('A4', 'portrait');
+
+        return $pdf->download('laporan-keuangan.pdf');
     }
 
     public function create()

@@ -14,10 +14,34 @@ class SiswaController extends Controller
     /**
      * Tampilkan semua siswa + relasi user
      */
-    public function index()
+    public function index(Request $request)
     {
-        $siswas = Siswa::with('user')->get();
-        return view('admin.siswa.index', compact('siswas'));
+        $query = Siswa::with('user')->orderBy('nama', 'ASC');
+
+        // FILTER KELAS
+        if ($request->kelas && $request->kelas != '') {
+            $query->where('kelas', $request->kelas);
+        }
+
+        // PENCARIAN (nama atau nis)
+        if ($request->search && $request->search != '') {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'LIKE', "%$search%")
+                ->orWhereHas('user', function ($u) use ($search) {
+                    $u->where('nis', 'LIKE', "%$search%");
+                });
+            });
+        }
+
+        // PAGINATION
+        $siswas = $query->paginate(10)->withQueryString();
+
+        // Untuk dropdown kelas
+        $kelasList = Siswa::select('kelas')->distinct()->pluck('kelas');
+
+        return view('admin.siswa.index', compact('siswas', 'kelasList'));
     }
 
     /**

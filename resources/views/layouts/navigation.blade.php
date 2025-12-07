@@ -10,7 +10,7 @@
                     <x-application-logo class="h-8 w-8 text-blue-600" />
                 </div>
                 <div>
-                  <span class="block text-lg font-bold text-gray-800 tracking-tight">E-Cek SPP</span>
+                  <span class="block text-lg font-bold text-gray-800 tracking-tight">SIKP-SPP</span>
                     @hasrole('admin')
                     <span class="block text-xs text-gray-400 font-medium uppercase tracking-wider">Admin Panel</span>
                     @endhasrole

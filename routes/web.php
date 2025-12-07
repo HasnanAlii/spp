@@ -11,6 +11,7 @@ use App\Http\Controllers\TahunanController;
 use App\Http\Controllers\PembayaranLainnyaController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\KeuanganController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SppController;
 
 Route::get('/', function () {
@@ -36,16 +37,22 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
         Route::resource('keuangan', KeuanganController::class);
         Route::resource('spp', SppController::class);
         Route::get('/pembayaran/data/{siswa_id}', [PembayaranController::class, 'getTagihan'])->name('getTagihan');
+        Route::get('/keuangan/export/pdf', [KeuanganController::class, 'exportPdf'])->name('keuangan.export.pdf');
+        Route::get('/pembayaran/export/pdf', [PembayaranController::class, 'exportPdf'])->name('pembayaran.export.pdf');
+
+
 });
 
 Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->group(function () {
 
     Route::get('/spp', [SiswaController::class, 'profile'])->name('siswas.index');
-
-
-    
 });
 
+Route::middleware('auth')->group(function () {
+        Route::get('/notifications', [NotificationController::class, 'list'])->name('notifications.list');
+        Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.readAll');
+
+});
 
 
 require __DIR__.'/auth.php';

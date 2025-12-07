@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-12 bg-blue-50 min-h-screen">
+    <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             
             <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-blue-100">

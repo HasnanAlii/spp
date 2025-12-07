@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Keuangan;
 use App\Models\Pembayaran;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Siswa;
 use App\Models\SppSiswa;
 use Illuminate\Http\Request;
@@ -14,13 +15,58 @@ class PembayaranController extends Controller
     /**
      * INDEX (Admin melihat seluruh transaksi)
      */
-    public function index()
+    public function index(Request $request)
     {
-        $pembayarans = Pembayaran::with(['siswa', 'sppSiswa'])
-                                 ->latest()
-                                 ->get();
+        $query = Pembayaran::with(['siswa', 'sppSiswa'])->latest();
+
+        if ($request->filter === 'harian') {
+            $query->whereDate('created_at', today());
+        }
+
+        if ($request->filter === 'bulanan') {
+            $query->whereYear('created_at', date('Y'))
+                ->whereMonth('created_at', date('m'));
+        }
+
+        if ($request->filter === 'tahunan') {
+            $query->whereYear('created_at', date('Y'));
+        }
+
+        $pembayarans = $query->paginate(10)->withQueryString();
 
         return view('admin.pembayaran.index', compact('pembayarans'));
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $query = Pembayaran::with(['siswa', 'sppSiswa'])->latest();
+
+        // Terapkan filter yang sama seperti index
+        if ($request->filter === 'harian') {
+            $query->whereDate('created_at', today());
+        }
+
+        if ($request->filter === 'bulanan') {
+            $query->whereYear('created_at', date('Y'))
+                ->whereMonth('created_at', date('m'));
+        }
+
+        if ($request->filter === 'tahunan') {
+            $query->whereYear('created_at', date('Y'));
+        }
+
+        $pembayarans = $query->get();
+
+        // Hitung total pemasukan pembayaran
+        $total = $pembayarans->sum('jumlah_bayar');
+
+        $pdf = Pdf::loadView('admin.pembayaran.pdf', [
+            'pembayarans' => $pembayarans,
+            'total'       => $total,
+            'filter'      => $request->filter
+        ])->setPaper('A4', 'portrait');
+
+        return $pdf->download('laporan-pembayaran.pdf');
     }
 
     /**
@@ -33,66 +79,62 @@ class PembayaranController extends Controller
         ]);
     }
 
-    /**
-     * AJAX - Ambil Tagihan SPP Siswa Yang Belum Lunas
-     */
-public function getTagihan($siswa_id)
-{
-    $tagihan = SppSiswa::where('siswa_id', $siswa_id)
-        ->where('sisa_tagihan', '>', 0)
-        ->get();
 
-    return response()->json([
-        'tagihan' => $tagihan
-    ]);
-}
+    public function getTagihan($siswa_id)
+    {
+        $tagihan = SppSiswa::where('siswa_id', $siswa_id)
+            ->where('sisa_tagihan', '>', 0)
+            ->get();
 
-
-    /**
-     * SIMPAN TRANSAKSI PEMBAYARAN
-     */
-public function store(Request $request)
-{
-    $request->validate([
-        'siswa_id'      => 'required|exists:siswas,id',
-        'spp_siswa_id'  => 'required|exists:spp_siswas,id',
-        'nominal_bayar' => 'required|numeric|min:1',
-    ]);
-
-    // Ambil data tagihan
-    $tagihan = SppSiswa::findOrFail($request->spp_siswa_id);
-
-    // Kurangi sisa tagihan
-    $tagihan->sisa_tagihan -= $request->nominal_bayar;
-
-    // Jika lunas
-    if ($tagihan->sisa_tagihan <= 0) {
-        $tagihan->sisa_tagihan = 0;
-        $tagihan->status = 'lunas';
+        return response()->json([
+            'tagihan' => $tagihan
+        ]);
     }
 
-    $tagihan->save();
 
-    // Simpan transaksi pembayaran
-    $pembayaran = Pembayaran::create([
-        'siswa_id'      => $request->siswa_id,
-        'spp_siswa_id'  => $request->spp_siswa_id,
-        'jumlah_bayar'  => $request->nominal_bayar,
-        'tanggal_bayar' => $request->tanggal ?? now(),
-        'keterangan'    => $request->keterangan
-    ]);
+    
+    public function store(Request $request)
+    {
+        $request->validate([
+            'siswa_id'      => 'required|exists:siswas,id',
+            'spp_siswa_id'  => 'required|exists:spp_siswas,id',
+            'nominal_bayar' => 'required|numeric|min:1',
+        ]);
 
-    // === TAMBAHKAN KE TABEL KEUANGAN ===
-    Keuangan::create([
-        'id_pembayaran' => $pembayaran->id,
-        'jumlah'        => $request->nominal_bayar,
-        'keterangan'    => "Pembayaran SPP - " . $tagihan->nama_spp,
-        'arus_dana'     => 'masuk',
-    ]);
+        // Ambil data tagihan
+        $tagihan = SppSiswa::findOrFail($request->spp_siswa_id);
 
-    return redirect()->route('pembayaran.index')
-        ->with('success', 'Pembayaran berhasil dicatat & dicatat ke laporan keuangan.');
-}
+        // Kurangi sisa tagihan
+        $tagihan->sisa_tagihan -= $request->nominal_bayar;
+
+        // Jika lunas
+        if ($tagihan->sisa_tagihan <= 0) {
+            $tagihan->sisa_tagihan = 0;
+            $tagihan->status = 'lunas';
+        }
+
+        $tagihan->save();
+
+        // Simpan transaksi pembayaran
+        $pembayaran = Pembayaran::create([
+            'siswa_id'      => $request->siswa_id,
+            'spp_siswa_id'  => $request->spp_siswa_id,
+            'jumlah_bayar'  => $request->nominal_bayar,
+            'tanggal_bayar' => $request->tanggal ?? now(),
+            'keterangan'    => $request->keterangan
+        ]);
+
+        // === TAMBAHKAN KE TABEL KEUANGAN ===
+        Keuangan::create([
+            'id_pembayaran' => $pembayaran->id,
+            'jumlah'        => $request->nominal_bayar,
+            'keterangan'    => "Pembayaran SPP - " . $tagihan->nama_spp,
+            'arus_dana'     => 'masuk',
+        ]);
+
+        return redirect()->route('pembayaran.index')
+            ->with('success', 'Pembayaran berhasil dicatat & dicatat ke laporan keuangan.');
+    }
 
     /**
      * DETAIL PEMBAYARAN
