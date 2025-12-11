@@ -12,6 +12,7 @@ use App\Http\Controllers\PembayaranLainnyaController;
 use App\Http\Controllers\PembayaranController;
 use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\SiswaImportController;
 use App\Http\Controllers\SppController;
 
 Route::get('/', function () {
@@ -52,6 +53,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/notifications', [NotificationController::class, 'list'])->name('notifications.list');
         Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.readAll');
 
+});
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::post('/siswa/import', [SiswaImportController::class, 'import'])->name('siswa.import.store');
 });
 
 

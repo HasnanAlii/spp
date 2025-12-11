@@ -15,11 +15,9 @@
     <div class="py-12 px-10 bg-slate-50 min-h-screen">
         <div class=" mx-auto sm:px-6 lg:px-8">
             
-            {{-- MAIN CARD --}}
             <div class="bg-white shadow-xl shadow-slate-200/60 rounded-3xl overflow-hidden border border-slate-100">
                 <div class="p-6 lg:p-10">
 
-                    {{-- FLASH MESSAGE --}}
                     @if(session('success'))
                         <div x-data="{ show: true }" x-show="show" class="mb-8 p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-between">
                             <div class="flex items-center gap-3">
@@ -34,27 +32,136 @@
                         </div>
                     @endif
 
-                    {{-- HEADER & ACTION --}}
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
                         <div>
                             <h3 class="text-xl font-bold text-slate-800">Data Siswa Terdaftar</h3>
                             <p class="text-sm text-slate-500 mt-1">Kelola informasi siswa, kelas, dan status akademik.</p>
                         </div>
                         
-                        <a href="{{ route('siswa.create') }}" 
-                           class="group inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-2xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 transition-all duration-300 transform hover:-translate-y-0.5">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:rotate-90" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                            </svg>
-                            Tambah Siswa Baru
-                        </a>
+                        <div class="flex flex-wrap gap-3">
+                            <a href="{{ route('siswa.create') }}" 
+                               class="group inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 transition-all duration-300 transform hover:-translate-y-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:rotate-90" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                                </svg>
+                                <span>Tambah Siswa</span>
+                            </a>
+
+                            <button onclick="openImportModal()"
+                                    class="group inline-flex items-center gap-2 px-5 py-3 bg-emerald-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-emerald-500/30 hover:bg-emerald-700 hover:shadow-emerald-600/40 transition-all duration-300 transform hover:-translate-y-0.5">
+                                {{-- <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:-translate-y-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg> --}}
+                                 <i data-feather="upload" class="h-5 w-5 transition-transform group-hover:-translate-y-0.5"></i>
+                                <span>Import Excel</span>
+                            </button>
+                        </div>
                     </div>
 
-                    {{-- FILTER & SEARCH TOOLBAR --}}
-                    <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 mb-8">
+                    <div id="importModal" 
+                         class="fixed inset-0 z-50 hidden transition-opacity duration-300" 
+                         aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                        
+                        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0" id="importModalBackdrop"></div>
+
+                        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg scale-95 opacity-0" id="importModalPanel">
+                                
+                                <div class="bg-white px-6 py-6 border-b border-slate-100 flex justify-between items-center">
+                                    <div>
+                                        <h3 class="text-lg font-bold text-slate-800" id="modal-title">Import Data Siswa</h3>
+                                        <p class="text-sm text-slate-500">Upload file Excel (.xlsx) sesuai format.</p>
+                                    </div>
+                                    <button onclick="closeImportModal()" class="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 p-2 rounded-lg transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <form action="{{ route('siswa.import.store') }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    <div class="px-6 py-6 space-y-4">
+                                        
+                                        <div class="relative group">
+                                            <label for="file-upload" class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer bg-slate-50/50 hover:bg-blue-50/50 hover:border-blue-400 transition-all duration-300">
+                                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    <div class="bg-white p-3 rounded-full shadow-sm mb-3 group-hover:scale-110 transition-transform duration-300">
+                                                        <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                                                    </div>
+                                                    <p class="mb-1 text-sm text-slate-600 font-medium"><span class="text-blue-600 hover:underline">Klik untuk upload</span> atau drag file</p>
+                                                    <p class="text-xs text-slate-400">Format yang didukung: XLSX, XLS</p>
+                                                </div>
+                                                <input id="file-upload" name="file" type="file" accept=".xlsx,.xls" class="hidden" required onchange="updateFileName(this)" />
+                                            </label>
+                                        </div>
+
+                                        <div id="file-name-display" class="hidden items-center p-3 bg-emerald-50 border border-emerald-100 rounded-lg text-emerald-700 text-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                            </svg>
+                                            <span class="truncate font-medium" id="file-name-text"></span>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="bg-slate-50 px-6 py-4 flex flex-row-reverse gap-2 rounded-b-2xl">
+                                        <button type="submit" class="w-full sm:w-auto inline-flex justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 transition-all">
+                                            Proses Import
+                                        </button>
+                                        <button type="button" onclick="closeImportModal()" class="mt-3 sm:mt-0 w-full sm:w-auto inline-flex justify-center rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 transition-all">
+                                            Batal
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        const modal = document.getElementById('importModal');
+                        const backdrop = document.getElementById('importModalBackdrop');
+                        const panel = document.getElementById('importModalPanel');
+
+                        function openImportModal() {
+                            modal.classList.remove('hidden');
+                            setTimeout(() => {
+                                backdrop.classList.remove('opacity-0');
+                                panel.classList.remove('opacity-0', 'scale-95');
+                                panel.classList.add('opacity-100', 'scale-100');
+                            }, 10);
+                        }
+
+                        function closeImportModal() {
+                            backdrop.classList.add('opacity-0');
+                            panel.classList.remove('opacity-100', 'scale-100');
+                            panel.classList.add('opacity-0', 'scale-95');
+                            
+                            setTimeout(() => {
+                                modal.classList.add('hidden');
+                                document.getElementById('file-upload').value = '';
+                                document.getElementById('file-name-display').classList.add('hidden');
+                            }, 300); 
+                        }
+
+                        function updateFileName(input) {
+                            const display = document.getElementById('file-name-display');
+                            const text = document.getElementById('file-name-text');
+                            if (input.files && input.files[0]) {
+                                text.textContent = input.files[0].name;
+                                display.classList.remove('hidden');
+                                display.classList.add('flex');
+                            } else {
+                                display.classList.add('hidden');
+                                display.classList.remove('flex');
+                            }
+                        }
+                    </script>
+
+
+                    <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 mb-8 mt-4">
                         <form method="GET" class="flex flex-col md:flex-row md:items-end gap-4">
                             
-                            {{-- Filter Kelas --}}
                             <div class="flex-1 md:flex-none md:w-48">
                                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Filter Kelas</label>
                                 <div class="relative">
@@ -74,7 +181,6 @@
                                 </div>
                             </div>
 
-                            {{-- Search Input --}}
                             <div class="flex-1">
                                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Pencarian</label>
                                 <div class="relative">
@@ -90,7 +196,6 @@
                                 </div>
                             </div>
 
-                            {{-- Action Buttons --}}
                             <div class="flex gap-2">
                                 <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl shadow-md hover:bg-blue-700 transition-all">
                                     Cari
@@ -106,11 +211,9 @@
                         </form>
                     </div>
 
-                    {{-- TABLE CONTAINER --}}
                     <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-slate-100">
-                                {{-- TABLE HEAD --}}
                                 <thead class="bg-slate-50/80">
                                     <tr>
                                         <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">No</th>
@@ -122,7 +225,6 @@
                                     </tr>
                                 </thead>
 
-                                {{-- TABLE BODY --}}
                                 <tbody class="divide-y divide-slate-100 bg-white">
                                     @forelse($siswas as $siswa)
                                         <tr class="group hover:bg-blue-50/40 transition-colors duration-200">
@@ -231,7 +333,6 @@
                         </div>
                     </div>
 
-                    {{-- PAGINATION --}}
                     @if(isset($siswas) && method_exists($siswas, 'links'))
                         <div class="mt-6">
                             {{ $siswas->links() }}

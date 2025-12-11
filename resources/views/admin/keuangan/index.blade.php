@@ -110,37 +110,108 @@
                             </a>
                         </div>
 
-                        {{-- FILTER TABS --}}
                         <div class="mb-6 overflow-x-auto pb-2">
                         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-    
-                        {{-- BAGIAN KIRI: FILTER TABS --}}
-                        <div class="flex flex-wrap items-center gap-2 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/60">
+                                
                             @php
                                 $filters = [
-                                    'harian' => 'Hari Ini',
-                                    'bulanan' => 'Bulan Ini',
-                                    'tahunan' => 'Tahun Ini'
+                                    'harian' => 'Harian',
+                                    'bulanan' => 'Bulanan',
+                                    'tahunan' => 'Tahunan'
                                 ];
                                 $currentFilter = request('filter');
+                                $selectedTanggal = request('tanggal');
+                                $selectedBulan = request('bulan'); 
+                                $selectedTahun = request('tahun'); 
                             @endphp
 
-                            {{-- Tombol Semua --}}
-                            <a href="{{ route('keuangan.index') }}"
-                            class="px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 ease-in-out
-                            {{ !$currentFilter ? 'bg-white text-slate-800 shadow-sm ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50' }}">
-                                Semua
-                            </a>
-
-                            {{-- Loop Filter --}}
-                            @foreach($filters as $key => $label)
-                                <a href="{{ route('keuangan.index', ['filter' => $key]) }}"
+                            <div class="flex flex-wrap items-center gap-2 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200/60">
+                                <a href="{{ route('keuangan.index') }}"
                                 class="px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 ease-in-out
-                                {{ $currentFilter == $key ? 'bg-white text-slate-800 shadow-sm ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50' }}">
-                                    {{ $label }}
+                                {{ !$currentFilter && !$selectedTanggal && !$selectedBulan && !$selectedTahun ? 'bg-white text-slate-800 shadow-sm ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50' }}">
+                                    Semua
                                 </a>
-                            @endforeach
-                        </div>
+
+                                @foreach($filters as $key => $label)
+                                    <a href="{{ route('keuangan.index', array_merge(request()->except('page','filter','tanggal','bulan','tahun'), ['filter' => $key])) }}"
+                                    class="filter-btn px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition-all duration-200 ease-in-out
+                                    {{ ($currentFilter == $key) ? 'bg-white text-slate-800 shadow-sm ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50' }}"
+                                    data-filter="{{ $key }}">
+                                        {{ $label }}
+                                    </a>
+                                @endforeach
+
+                                <form id="filter-form" action="{{ route('keuangan.index') }}" method="GET" class="flex items-center gap-2 ml-1">
+                                    @foreach(request()->except('page','tanggal','bulan','tahun','filter') as $name => $value)
+                                        <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+                                    @endforeach
+
+                                    <input type="hidden" name="filter" id="filter-input" value="{{ $currentFilter }}">
+
+                                    <input id="tanggal" name="tanggal" type="date" value="{{ $selectedTanggal }}"
+                                        class="date-input px-3 py-2 rounded-xl text-xs md:text-sm border border-slate-200/60 bg-white shadow-sm focus:outline-none hidden" />
+
+                                    <input id="bulan" name="bulan" type="month" value="{{ $selectedBulan }}"
+                                        class="month-input px-3 py-2 rounded-xl text-xs md:text-sm border border-slate-200/60 bg-white shadow-sm focus:outline-none hidden" />
+
+                                    <input id="tahun" name="tahun" type="number" min="1900" max="2099" step="1" value="{{ $selectedTahun ?? date('Y') }}"
+                                        class="year-input px-3 py-2 rounded-xl text-xs md:text-sm border border-slate-200/60 bg-white shadow-sm focus:outline-none hidden" />
+
+                                    <button type="submit"
+                                                class="apply-btn px-3 py-2 rounded-xl text-xs md:text-sm font-bold text-white transition-all duration-200 ease-in-out bg-blue-600 shadow-sm ring-1 ring-slate-200">
+                                        Terapkan
+                                    </button>
+
+                                    @if($selectedTanggal || $selectedBulan || $selectedTahun || $currentFilter)
+                                        <a href="{{ route('keuangan.index', request()->except('page','tanggal','bulan','tahun','filter')) }}"
+                                        class="px-3 py-2 rounded-xl text-xs md:text-sm font-semibold transition-all duration-200 ease-in-out text-slate-500 hover:text-slate-700 hover:bg-slate-200/50">
+                                            Reset
+                                        </a>
+                                    @endif
+                                </form>
+                            </div>
+
+                            <script>
+                                (function(){
+                                    const currentFilter = "{{ $currentFilter }}";
+                                    const filterInput = document.getElementById('filter-input');
+                                    const tanggal = document.getElementById('tanggal');
+                                    const bulan = document.getElementById('bulan');
+                                    const tahun = document.getElementById('tahun');
+
+                                    function showFor(filter) {
+                                        tanggal.classList.add('hidden');
+                                        bulan.classList.add('hidden');
+                                        tahun.classList.add('hidden');
+
+                                        filterInput.value = filter || '';
+
+                                        if (filter === 'harian') {
+                                            tanggal.classList.remove('hidden');
+                                        } else if (filter === 'bulanan') {
+                                            bulan.classList.remove('hidden');
+                                        } else if (filter === 'tahunan') {
+                                            tahun.classList.remove('hidden');
+                                        } else {
+                                        }
+                                    }
+
+                                    showFor(currentFilter);
+
+                                    document.querySelectorAll('.filter-btn').forEach(btn => {
+                                        btn.addEventListener('click', function(e){
+                                            e.preventDefault(); 
+                                            const f = this.dataset.filter;
+                                            showFor(f);
+                                            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('bg-white','text-slate-800','shadow-sm','ring-1','ring-slate-200'));
+                                            this.classList.add('bg-white','text-slate-800','shadow-sm','ring-1','ring-slate-200');
+                                            filterInput.value = f;
+                                        });
+                                    });
+
+                                })();
+                            </script>
+
 
                         {{-- BAGIAN KANAN: EXPORT ACTION --}}
                         <div class="w-full md:w-auto">

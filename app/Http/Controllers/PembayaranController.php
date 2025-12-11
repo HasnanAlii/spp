@@ -7,35 +7,69 @@ use App\Models\Pembayaran;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Siswa;
 use App\Models\SppSiswa;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PembayaranController extends Controller
 {
-    /**
-     * INDEX (Admin melihat seluruh transaksi)
-     */
+
     public function index(Request $request)
     {
         $query = Pembayaran::with(['siswa', 'sppSiswa'])->latest();
 
-        if ($request->filter === 'harian') {
-            $query->whereDate('created_at', today());
+        if (Auth::check() && Auth::user()->role === 'siswa') {
+            $query->where('siswa_id', Auth::id());
         }
 
-        if ($request->filter === 'bulanan') {
-            $query->whereYear('created_at', date('Y'))
-                ->whereMonth('created_at', date('m'));
+        if ($request->filled('tanggal')) {
+            try {
+                $date = Carbon::parse($request->tanggal)->startOfDay();
+                $query->whereDate('created_at', $date);
+            } catch (\Exception $e) {}
+        } elseif ($request->filled('bulan')) {
+            try {
+                $parts = explode('-', $request->bulan);
+                if (count($parts) === 2) {
+                    $year = (int) $parts[0];
+                    $month = (int) $parts[1];
+                    $query->whereYear('created_at', $year)
+                        ->whereMonth('created_at', $month);
+                }
+            } catch (\Exception $e) {}
+        } elseif ($request->filled('tahun')) {
+            try {
+                $year = (int) $request->tahun;
+                if ($year > 0) {
+                    $query->whereYear('created_at', $year);
+                }
+            } catch (\Exception $e) {}
+        } else {
+            if ($request->filter === 'harian') {
+                $query->whereDate('created_at', today());
+            }
+
+            if ($request->filter === 'bulanan') {
+                $query->whereYear('created_at', date('Y'))
+                    ->whereMonth('created_at', date('m'));
+            }
+
+            if ($request->filter === 'tahunan') {
+                $query->whereYear('created_at', date('Y'));
+            }
         }
 
-        if ($request->filter === 'tahunan') {
-            $query->whereYear('created_at', date('Y'));
-        }
+        $summaryQuery = (clone $query);
+
+        $total = $summaryQuery->sum('jumlah_bayar');
+
+        $totalTransaksi = (clone $summaryQuery)->count();
 
         $pembayarans = $query->paginate(10)->withQueryString();
 
-        return view('admin.pembayaran.index', compact('pembayarans'));
+        return view('admin.pembayaran.index', compact('pembayarans', 'total', 'totalTransaksi'));
     }
+
 
     public function exportPdf(Request $request)
     {
