@@ -50,6 +50,15 @@ class SiswaImport implements ToModel, WithHeadingRow, WithChunkReading, WithVali
                 'password' => Hash::make($password),
             ]);
 
+        // try {
+        //     $password = !empty($row['password']) ? $row['password'] : 'password';
+
+        //     $user = User::create([
+        //         'name'     => $row['nama'],
+        //         'nis'      => $nis,
+        //         'password' => Hash::make($password),
+        //     ]);
+
             if (method_exists($user, 'assignRole')) {
                 $user->assignRole('siswa');
             }

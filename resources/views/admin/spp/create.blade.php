@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-bold text-2xl text-blue-800 leading-tight">
-            {{ __('Tambah Tanggungan Biaya') }}
+        <h2 class="font-bold text-2xl text-black leading-tight">
+            {{ __('Tambah SPP') }}
         </h2>
     </x-slot>
 

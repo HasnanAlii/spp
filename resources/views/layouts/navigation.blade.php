@@ -10,7 +10,7 @@
                     <x-application-logo class="h-8 w-8 text-blue-600" />
                 </div>
                 <div>
-                  <span class="block text-lg font-bold text-gray-800 tracking-tight">SIKP-SPP</span>
+                  <span class="block text-lg font-bold text-gray-800 tracking-tight">SIKS-SPP</span>
                     @hasrole('admin')
                     <span class="block text-xs text-gray-400 font-medium uppercase tracking-wider">Admin Panel</span>
                     @endhasrole
@@ -45,7 +45,19 @@
                                 : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600' }}">
                             <i data-feather="users" 
                                class="w-5 h-5 {{ request()->routeIs('siswa.*') ? 'text-white' : 'text-gray-400 group-hover:text-blue-600' }}"></i>
-                            <span>Data Siswa</span>
+                            <span> Siswa</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('spp.index') }}"
+                            class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group
+                            {{ request()->routeIs('spp.*') 
+                                ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
+                                : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600' }}">
+                            <i data-feather="book" 
+                            class="w-5 h-5 {{ request()->routeIs('spp.*') ? 'text-white' : 'text-gray-400 group-hover:text-blue-600' }}"></i>
+                            <span>SPP</span>
                         </a>
                     </li>
 
@@ -61,17 +73,6 @@
                         </a>
                     </li>
 
-                    <li>
-                        <a href="{{ route('spp.index') }}"
-                            class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group
-                            {{ request()->routeIs('spp.*') 
-                                ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
-                                : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600' }}">
-                            <i data-feather="book" 
-                            class="w-5 h-5 {{ request()->routeIs('spp.*') ? 'text-white' : 'text-gray-400 group-hover:text-blue-600' }}"></i>
-                            <span>SPP</span>
-                        </a>
-                    </li>
                     <li>
                         <a href="{{ route('keuangan.index') }}"
                             class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group

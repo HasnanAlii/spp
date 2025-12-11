@@ -69,6 +69,7 @@
                             <div class="space-y-5">
                                 @php
                                     $details = [
+                                        ['icon' => 'user', 'label' => 'NIS', 'value' => $siswa->user->nis],
                                         ['icon' => 'phone', 'label' => 'No. Telepon', 'value' => $siswa->telp],
                                         ['icon' => 'user', 'label' => 'Jenis Kelamin', 'value' => $siswa->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan'],
                                         ['icon' => 'calendar', 'label' => 'Tanggal Lahir', 'value' => $siswa->tanggal_lahir ? \Carbon\Carbon::parse($siswa->tanggal_lahir)->format('d M Y') : '-'],
@@ -113,7 +114,7 @@
                         <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div>
                                 <h3 class="text-sm font-bold uppercase tracking-wide {{ $totalSisa > 0 ? 'text-rose-600' : 'text-emerald-600' }}">
-                                    Status Keuangan Siswa
+                                    Sisa Tagihan Siswa
                                 </h3>
                                 <div class="text-4xl font-extrabold mt-2 font-mono tracking-tight {{ $totalSisa > 0 ? 'text-rose-700' : 'text-emerald-700' }}">
                                     Rp {{ number_format($totalSisa, 0, ',', '.') }}
@@ -176,21 +177,26 @@
 
                                             <td class="px-6 py-4 text-center whitespace-nowrap">
                                                 @php
+                                                    // Label yang ditampilkan
                                                     $tipeLabel = match($item->tipe) {
-                                                        'bulanan' => 'Bulanan',
-                                                        'tahunan' => 'Tahunan',
-                                                        default => ucfirst($item->tipe),
+                                                        'bulanan' => 'UDB',
+                                                        'tahunan' => 'UDT',
+                                                        default   => 'Lainnya',
                                                     };
+
+                                                    // Warna badge
                                                     $badgeClass = match($item->tipe) {
                                                         'bulanan' => 'bg-blue-50 text-blue-700 ring-blue-600/20',
                                                         'tahunan' => 'bg-indigo-50 text-indigo-700 ring-indigo-600/20',
-                                                        default => 'bg-slate-50 text-slate-700 ring-slate-600/20',
+                                                        default    => 'bg-slate-50 text-slate-700 ring-slate-600/20',
                                                     };
                                                 @endphp
-                                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset {{ $badgeClass }}">
+
+                                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ring-1 ring-inset {{ $badgeClass }}">
                                                     {{ $tipeLabel }}
                                                 </span>
                                             </td>
+
 
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-slate-600 font-medium">
                                                 Rp {{ number_format($item->total_tagihan, 0, ',', '.') }}

@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <h2 class="font-extrabold text-2xl text-gray-800 leading-tight tracking-tight">
-                {{ __('Tanggungan Biaya Siswa') }}
+                {{ __('Manajemen SPP') }}
             </h2>
             <nav class="flex text-sm font-medium text-gray-500">
                 <span class="hover:text-blue-600 cursor-pointer transition">Dashboard</span>
@@ -138,24 +138,26 @@
                                             </td>
                                             
                                             {{-- JENIS (BADGE) --}}
-                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                            <td class="px-6 py-4 text-center whitespace-nowrap">
                                                 @php
                                                     $tipeLabel = match($item->tipe) {
-                                                        'bulanan' => 'Bulanan',
-                                                        'tahunan' => 'Tahunan',
-                                                        default => ucfirst($item->tipe),
+                                                        'bulanan' => 'UDB',
+                                                        'tahunan' => 'UDT',
+                                                        default   => 'Lainnya',
                                                     };
-                                                    
+
                                                     $badgeClass = match($item->tipe) {
-                                                        'bulanan' => 'bg-blue-50 text-blue-600 border-blue-100',
-                                                        'tahunan' => 'bg-indigo-50 text-indigo-600 border-indigo-100',
-                                                        default => 'bg-slate-50 text-slate-600 border-slate-100',
+                                                        'bulanan' => 'bg-blue-50 text-blue-700 ring-blue-600/20',
+                                                        'tahunan' => 'bg-indigo-50 text-indigo-700 ring-indigo-600/20',
+                                                        default    => 'bg-slate-50 text-slate-700 ring-slate-600/20',
                                                     };
                                                 @endphp
-                                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border {{ $badgeClass }}">
+
+                                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ring-1 ring-inset {{ $badgeClass }}">
                                                     {{ $tipeLabel }}
                                                 </span>
                                             </td>
+
                                            
                                             {{-- NOMINAL --}}
                                             <td class="px-6 py-4 whitespace-nowrap text-right">

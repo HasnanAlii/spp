@@ -233,23 +233,27 @@
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                                     @php
                                                         $tipe = $pembayaran->sppSiswa->tipe ?? 'lainnya';
+
+                                                        // Label baru sesuai permintaan
                                                         $label = match($tipe) {
-                                                            'bulanan' => 'Bulanan',
-                                                            'tahunan' => 'Tahunan',
-                                                            default => ucfirst($tipe),
+                                                            'bulanan' => 'UDB',
+                                                            'tahunan' => 'UDT',
+                                                            default   => 'Lainnya',
                                                         };
 
+                                                        // Warna badge
                                                         $badgeClass = match($tipe) {
                                                             'bulanan' => 'bg-blue-50 text-blue-700 border-blue-100',
                                                             'tahunan' => 'bg-indigo-50 text-indigo-700 border-indigo-100',
-                                                            default => 'bg-slate-50 text-slate-700 border-slate-100',
+                                                            default    => 'bg-slate-50 text-slate-700 border-slate-100',
                                                         };
                                                     @endphp
 
-                                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border {{ $badgeClass }}">
+                                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold border {{ $badgeClass }}">
                                                         {{ $label }}
                                                     </span>
                                                 </td>
+
 
                                                 {{-- NAMA TANGGUNGAN --}}
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
@@ -274,11 +278,10 @@
                                                         <div class="flex justify-center items-center gap-2">
                                                             {{-- DETAIL --}}
                                                             <a href="{{ route('pembayaran.show', $pembayaran->id) }}"
-                                                               class="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all"
-                                                               title="Detail" aria-label="Detail pembayaran">
-                                                                <i data-feather="eye" class="h-5 w-5" aria-hidden="true"></i>
+                                                                class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                                title="Lihat Struk/Detail Pembayaran" aria-label="Detail pembayaran">
+                                                                <i data-feather="file-text" class="h-5 w-5" aria-hidden="true"></i>
                                                             </a>
-
                                                             {{-- HAPUS --}}
                                                             <form action="{{ route('pembayaran.destroy', $pembayaran->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data transaksi ini secara permanen?')">
                                                                 @csrf

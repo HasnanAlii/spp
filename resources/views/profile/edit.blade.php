@@ -118,14 +118,14 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">No. Telepon Siswa (gunakan format 62..)</label>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">No. Telepon Siswa</label>
                                 <input type="text" name="telp" 
                                     class="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-3 px-4 transition"
                                     value="{{ old('telp', $siswa->telp) }}" required />
                             </div>
 
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 mb-2">No. Telepon Orang Tua (gunakan format 62..)</label>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">No. Telepon Orang Tua</label>
                                 <input type="text" name="telp_orangtua" 
                                     class="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-3 px-4 transition"
                                     value="{{ old('telp_orangtua', $siswa->telp_orangtua) }}" required />

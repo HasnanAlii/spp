@@ -61,7 +61,7 @@
                                         {{ $siswa->kelas }}
                                     </span>
                                 </div>
-
+                        
                                 <div>
                                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Nomor Telepon</p>
                                     <p class="text-base font-semibold text-slate-700 font-mono">{{ $siswa->telp }}</p>
@@ -169,18 +169,28 @@
                                                 <span class="bg-slate-100 px-2 py-1 rounded text-xs font-medium border border-slate-200">{{ $item->tahun_ajaran ?? '-' }}</span>
                                             </td>
 
-                                            <td class="px-6 py-4 text-center">
+                                            <td class="px-6 py-4 text-center whitespace-nowrap">
                                                 @php
-                                                    $tipeClass = match($item->tipe) {
-                                                        'bulanan' => 'text-blue-600 bg-blue-50 border-blue-100',
-                                                        'tahunan' => 'text-indigo-600 bg-indigo-50 border-indigo-100',
-                                                        default => 'text-slate-600 bg-slate-50 border-slate-100',
+                                            
+                                                    $tipeLabel = match($item->tipe) {
+                                                        'bulanan' => 'UDB',
+                                                        'tahunan' => 'UDT',
+                                                        default   => 'Lainnya',
+                                                    };
+
+                                                   
+                                                    $badgeClass = match($item->tipe) {
+                                                        'bulanan' => 'bg-blue-50 text-blue-700 ring-blue-600/20',
+                                                        'tahunan' => 'bg-indigo-50 text-indigo-700 ring-indigo-600/20',
+                                                        default    => 'bg-slate-50 text-slate-700 ring-slate-600/20',
                                                     };
                                                 @endphp
-                                                <span class="text-xs font-bold px-2.5 py-1 rounded-lg border {{ $tipeClass }}">
-                                                    {{ ucfirst($item->tipe) }}
+
+                                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ring-1 ring-inset {{ $badgeClass }}">
+                                                    {{ $tipeLabel }}
                                                 </span>
                                             </td>
+
 
                                             <td class="px-6 py-4 text-right font-mono text-sm text-slate-600">
                                                 Rp {{ number_format($item->total_tagihan, 0, ',', '.') }}

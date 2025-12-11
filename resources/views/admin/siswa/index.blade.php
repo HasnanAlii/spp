@@ -2,12 +2,12 @@
     <x-slot name="header">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <h2 class="font-extrabold text-2xl text-gray-800 leading-tight tracking-tight">
-                {{ __('Daftar Siswa') }}
+                {{ __('Manajemen Siswa') }}
             </h2>
             <nav class="flex text-sm font-medium text-gray-500">
                 <span class="hover:text-blue-600 cursor-pointer transition">Dashboard</span>
                 <span class="mx-2">/</span>
-                <span class="text-blue-600">Data Siswa</span>
+                <span class="text-blue-600"> Siswa</span>
             </nav>
         </div>
     </x-slot>
@@ -55,6 +55,57 @@
                                  <i data-feather="upload" class="h-5 w-5 transition-transform group-hover:-translate-y-0.5"></i>
                                 <span>Import Excel</span>
                             </button>
+                            
+                             <button onclick="openNaikModal()"
+                                    class="group inline-flex items-center gap-2 px-5 py-3 bg-purple-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-purple-500/30 hover:bg-purple-700 hover:shadow-purple-600/40 transition-all duration-300 transform hover:-translate-y-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                    </svg>
+                                <span>Naik Kelas</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- MODAL NAIK KELAS -->
+                    <div id="naikModal" 
+                        class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+                        
+                        <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md relative">
+
+                            <h2 class="text-xl font-extrabold text-slate-800 mb-2">
+                                Konfirmasi Naik Kelas
+                            </h2>
+
+                            <p class="text-slate-600 text-sm mb-6 leading-relaxed">
+                                Apakah Anda yakin ingin menaikkan kelas semua siswa? 
+                                Proses ini <span class="font-bold text-red-600">tidak dapat dibatalkan</span>.
+                            </p>
+
+                            <form action="{{ route('siswa.naikkelas') }}" method="POST">
+                                @csrf
+
+                                <div class="flex justify-end gap-3 mt-6">
+                                    
+                                    <button type="button" 
+                                            onclick="closeNaikModal()"
+                                            class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition">
+                                        Batal
+                                    </button>
+
+                                    <button type="submit"
+                                            class="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-xl shadow-lg shadow-purple-500/30 transition">
+                                        Ya, Naikkan
+                                    </button>
+                                </div>
+                            </form>
+
+                            <button onclick="closeNaikModal()" 
+                                    class="absolute top-3 right-3 text-slate-400 hover:text-red-500 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                        d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+
                         </div>
                     </div>
 
@@ -158,10 +209,32 @@
                         }
                     </script>
 
-
                     <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 mb-8 mt-4">
                         <form method="GET" class="flex flex-col md:flex-row md:items-end gap-4">
-                            
+
+                            <div class="flex-1 md:flex-none md:w-48">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Filter Angkatan</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 6h16M4 12h16m-7 6h7" />
+                                        </svg>
+                                    </div>
+
+                                    <select name="angkatan"
+                                        class="pl-10 w-full border-slate-200 rounded-xl text-sm focus:ring-blue-500 focus:border-blue-500 text-slate-700 bg-white shadow-sm py-2.5 cursor-pointer">
+                                        <option value="">Semua Angkatan</option>
+
+                                        @foreach($angkatanList as $angkatan)
+                                            <option value="{{ $angkatan }}" {{ request('angkatan') == $angkatan ? 'selected' : '' }}>
+                                                {{ $angkatan }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
                             <div class="flex-1 md:flex-none md:w-48">
                                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Filter Kelas</label>
                                 <div class="relative">
@@ -343,4 +416,14 @@
             </div>
         </div>
     </div>
+<script>
+    function openNaikModal() {
+        document.getElementById('naikModal').classList.remove('hidden');
+    }
+
+    function closeNaikModal() {
+        document.getElementById('naikModal').classList.add('hidden');
+    }
+</script>
+
 </x-app-layout>

@@ -56,7 +56,9 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::post('/siswa/import', [SiswaImportController::class, 'import'])->name('siswa.import.store');
+    Route::post('/siswa/import', [SiswaController::class, 'import'])->name('siswa.import.store');
+    Route::post('/siswa/naikkelas', [SiswaController::class, 'naikkelas'])->name('siswa.naikkelas');
+
 });
 
 
