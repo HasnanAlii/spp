@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendWaNotificationJob;
 use App\Models\Notification;
 use App\Models\SppMaster;
 use App\Models\SppSiswa;
@@ -44,78 +45,6 @@ class SppController extends Controller
     /**
      * Store SPP baru untuk seluruh siswa dalam suatu kelas
      */
-    // public function store(Request $request)
-    // {
-    //     $request->validate([
-    //         'kelas' => 'required',
-    //         'nama_spp' => 'required|string',
-    //         'tipe' => 'required|in:bulanan,tahunan,lainnya',
-    //         'nominal' => 'required|numeric|min:0',
-    //         'tahun_ajaran' => 'nullable|string'
-    //     ]);
-
-    //     // 1. Simpan sebagai template
-    //     $sppMaster = Spp::create([
-    //         'nama_spp' => $request->nama_spp,
-    //         'tipe' => $request->tipe,
-    //         'nominal' => $request->nominal,
-    //         'tahun_ajaran' => $request->tahun_ajaran,
-    //         'kelas' => $request->kelas,
-    //     ]);
-
-    //     // 2. Ambil seluruh siswa terkait kelas
-    //     $siswaList = Siswa::where('kelas', $request->kelas)->get();
-
-    //     foreach ($siswaList as $siswa) {
-
-    //         // 3. Simpan tagihan SPP siswa
-    //         SppSiswa::create([
-    //             'siswa_id' => $siswa->id,
-    //             'nama_spp' => $request->nama_spp,
-    //             'tipe' => $request->tipe,
-    //             'total_tagihan' => $request->nominal,
-    //             'sisa_tagihan' => $request->nominal,
-    //             'status' => 'belum lunas',
-    //             'tahun_ajaran' => $request->tahun_ajaran,
-    //         ]);
-
-    //         // 4. Kirim Whatsapp Fonnte
-    //         if (!empty($siswa->telp)) {
-
-    //             // pastikan format 62xxxx
-    //             $nomor = preg_replace('/^0/', '62', $siswa->telp);
-
-    //             $pesan = 
-    //                 "Pemberitahuan Tagihan SPP 📢
-
-    // Nama: *{$siswa->nama}*
-    // Kelas: *{$siswa->kelas}*
-
-    // Tagihan: *{$request->nama_spp} ({$request->tipe})*
-    // Jumlah: *Rp " . number_format($request->nominal, 0, ',', '.') . "*
-    // Status: *Belum Lunas*
-
-    // Silakan melakukan pembayaran kepada pihak sekolah.
-    // Terima kasih 🙏";
-
-    //             $response = Http::withHeaders([
-    //                 'Authorization' => 'L9PaGYokqbue5GHechJR',
-    //             ])->post('https://api.fonnte.com/send', [
-    //                 'target' => $nomor,
-    //                 'message' => $pesan,
-    //                 'countryCode' => '62',
-    //             ]);
-
-    //             // Log::info("Fonnte response siswa {$siswa->id}:", $response->json());
-    //         }
-    //     }
-
-    //     return redirect()->route('spp.index')->with(
-    //         'success',
-    //         'SPP berhasil ditambahkan & pemberitahuan dikirim ke seluruh siswa kelas ' . $request->kelas
-    //     );
-    // }
-
     public function store(Request $request)
     {
         $request->validate([
@@ -126,7 +55,7 @@ class SppController extends Controller
             'tahun_ajaran' => 'nullable|string'
         ]);
 
-        // 1. Simpan template SPP
+        // 1. Simpan sebagai template
         $sppMaster = Spp::create([
             'nama_spp' => $request->nama_spp,
             'tipe' => $request->tipe,
@@ -135,12 +64,12 @@ class SppController extends Controller
             'kelas' => $request->kelas,
         ]);
 
-        // 2. Ambil seluruh siswa dalam kelas
+        // 2. Ambil seluruh siswa terkait kelas
         $siswaList = Siswa::where('kelas', $request->kelas)->get();
-
+        $index = 0;
         foreach ($siswaList as $siswa) {
 
-            // 3. Buat tagihan SPP siswa
+            // Simpan tagihan SPP siswa
             SppSiswa::create([
                 'siswa_id' => $siswa->id,
                 'nama_spp' => $request->nama_spp,
@@ -151,21 +80,86 @@ class SppController extends Controller
                 'tahun_ajaran' => $request->tahun_ajaran,
             ]);
 
-            // 4. Buat notifikasi untuk siswa
-            Notification::create([
-                'user_id'   => $siswa->user_id, // pastikan field ini ada
-                'aktivitas' => 'Tagihan SPP baru: ' . $request->nama_spp .
-                            ' sebesar Rp ' . number_format($request->nominal, 0, ',', '.'),
-                'waktu'     => now(),
-                'read_at'   => null
-            ]);
+            if (!empty($siswa->telp)) {
+
+        $pesan = "Pemberitahuan Tagihan SPP 📢
+
+Nama: *{$siswa->nama}*
+Kelas: *{$siswa->kelas}*
+
+Tagihan: *{$request->nama_spp}*
+Jumlah: *Rp " . number_format($request->nominal, 0, ',', '.') . "*
+Status: *Belum Lunas*
+
+Silakan melakukan pembayaran kepada pihak sekolah.
+Terima kasih 🙏";
+
+                // Delay per pesan: 30 detik × index
+                $delaySeconds = 120 * $index;
+
+                dispatch(new SendWaNotificationJob($siswa, $pesan))
+                    ->delay(now()->addSeconds($delaySeconds));
+
+                $index++;
+            }
         }
 
         return redirect()->route('spp.index')->with(
             'success',
-            'SPP berhasil ditambahkan & notifikasi dikirim ke seluruh siswa kelas ' . $request->kelas
+            'SPP berhasil ditambahkan & pemberitahuan dikirim ke seluruh siswa kelas ' . $request->kelas
         );
     }
+
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'kelas' => 'required',
+    //         'nama_spp' => 'required|string',
+    //         'tipe' => 'required|in:bulanan,tahunan,lainnya',
+    //         'nominal' => 'required|numeric|min:0',
+    //         'tahun_ajaran' => 'nullable|string'
+    //     ]);
+
+    //     // 1. Simpan template SPP
+    //     $sppMaster = Spp::create([
+    //         'nama_spp' => $request->nama_spp,
+    //         'tipe' => $request->tipe,
+    //         'nominal' => $request->nominal,
+    //         'tahun_ajaran' => $request->tahun_ajaran,
+    //         'kelas' => $request->kelas,
+    //     ]);
+
+    //     // 2. Ambil seluruh siswa dalam kelas
+    //     $siswaList = Siswa::where('kelas', $request->kelas)->get();
+
+    //     foreach ($siswaList as $siswa) {
+
+    //         // 3. Buat tagihan SPP siswa
+    //         SppSiswa::create([
+    //             'siswa_id' => $siswa->id,
+    //             'nama_spp' => $request->nama_spp,
+    //             'tipe' => $request->tipe,
+    //             'total_tagihan' => $request->nominal,
+    //             'sisa_tagihan' => $request->nominal,
+    //             'status' => 'belum lunas',
+    //             'tahun_ajaran' => $request->tahun_ajaran,
+    //         ]);
+
+    //         // 4. Buat notifikasi untuk siswa
+    //         Notification::create([
+    //             'user_id'   => $siswa->user_id, // pastikan field ini ada
+    //             'aktivitas' => 'Tagihan SPP baru: ' . $request->nama_spp .
+    //                         ' sebesar Rp ' . number_format($request->nominal, 0, ',', '.'),
+    //             'waktu'     => now(),
+    //             'read_at'   => null
+    //         ]);
+    //     }
+
+    //     return redirect()->route('spp.index')->with(
+    //         'success',
+    //         'SPP berhasil ditambahkan & notifikasi dikirim ke seluruh siswa kelas ' . $request->kelas
+    //     );
+    // }
 
 
 
