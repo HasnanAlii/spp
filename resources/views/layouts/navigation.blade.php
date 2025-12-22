@@ -79,8 +79,9 @@
                             {{ request()->routeIs('keuangan.*') 
                                 ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
                                 : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600' }}">
-                            <i data-feather="trending-up" 
+                            <i data-feather="dollar-sign" 
                                class="w-5 h-5 {{ request()->routeIs('keuangan.*') ? 'text-white' : 'text-gray-400 group-hover:text-blue-600' }}"></i>
+                               
                             <span>Keuangan</span>
                         </a>
                     </li>

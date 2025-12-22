@@ -32,19 +32,25 @@
                                 Pilih Jenis Tanggungan
                             </label>
 
-                         <div class="grid grid-cols-3 gap-4">
+                        <div class="grid grid-cols-3 gap-4">
                             @foreach ([
                                 'bulanan' => ['UDB (Bulanan)', 'calendar'],
                                 'tahunan' => ['UDT (Tahunan)', 'clock'],
                                 'lainnya' => ['Lainnya', 'collection'],
                             ] as $key => [$label, $icon])
+
+                                @php
+                                    $isActive = $spp->tipe === $key;
+                                @endphp
+
                                 <button type="button"
-                                        data-tipe="{{ $key }}"
-                                        class="tipeBtn py-3 px-4 rounded-xl border font-bold transition-all duration-200
+                                        disabled
+                                        class="py-3 px-4 rounded-xl border font-bold transition-all duration-200
                                             flex flex-col items-center justify-center gap-1
-                                            {{ $spp->tipe === $key
-                                                ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-300'
-                                                : 'border-blue-200 text-blue-600 hover:bg-blue-50' }}">
+                                            cursor-not-allowed
+                                            {{ $isActive
+                                                    ? 'bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-blue-300'
+                                                    : 'bg-gray-100 text-gray-400 border-gray-200 opacity-70' }}">
 
                                     {{-- ICON --}}
                                     @if($icon === 'calendar')
@@ -71,15 +77,20 @@
                                     <span class="text-sm text-center">
                                         {{ $label }}
                                     </span>
+
+                                    {{-- BADGE AKTIF --}}
+                                    @if($isActive)
+                                        <span class="mt-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-white/20">
+                                            Aktif
+                                        </span>
+                                    @endif
                                 </button>
                             @endforeach
                         </div>
-                        
-                            <input type="hidden" name="tipe" id="tipeValue" value="{{ $spp->tipe }}" required>
+                        <input type="hidden" name="tipe" value="{{ $spp->tipe }}">
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
                             {{-- TAHUN AJARAN --}}
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Tahun Ajaran</label>
@@ -91,38 +102,41 @@
                             </div>
 
                             {{-- KELAS --}}
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Kelas</label>
-                                <select name="kelas"
-                                        id="kelasInput"
-                                        class="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        required>
-                                    @foreach ($kelasList as $kls)
-                                        <option value="{{ $kls }}" {{ $spp->kelas == $kls ? 'selected' : '' }}>
-                                            {{ $kls }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                        <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Kelas</label>
 
-                            {{-- GELOMBANG --}}
-                            <div id="gelombangWrapper"
-                                 class="hidden md:col-span-2 bg-emerald-50 p-4 rounded-xl border border-emerald-200">
-                                <label class="block text-sm font-semibold text-emerald-800 mb-1">
-                                    Gelombang Pendaftaran
-                                </label>
+                        <select class="w-full rounded-xl border-gray-300 bg-gray-100 shadow-sm"
+                                disabled>
+                            @foreach ($kelasList as $kls)
+                                <option value="{{ $kls }}" {{ $spp->kelas == $kls ? 'selected' : '' }}>
+                                    {{ $kls }}
+                                </option>
+                            @endforeach
+                        </select>
 
-                                <select name="gelombang"
-                                        id="gelombang"
-                                        class="w-full rounded-xl border-emerald-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-                                    <option value="">-- Pilih Gelombang --</option>
-                                    @for ($i = 1; $i <= 3; $i++)
-                                        <option value="{{ $i }}" {{ $spp->gelombang == $i ? 'selected' : '' }}>
-                                            Gelombang {{ $i }}
-                                        </option>
-                                    @endfor
-                                </select>
-                            </div>
+                        {{-- VALUE ASLI DIKIRIM --}}
+                        <input type="hidden" name="kelas" value="{{ $spp->kelas }}">
+                    </div>
+                    <div id="gelombangWrapper"
+                        class="md:col-span-2 bg-emerald-50 p-4 rounded-xl border border-emerald-200">
+
+                        <label class="block text-sm font-semibold text-emerald-800 mb-1">
+                            Gelombang Pendaftaran
+                        </label>
+
+                        <select class="w-full rounded-xl border-emerald-300 bg-gray-100 shadow-sm"
+                                disabled>
+                            <option value="">-- Pilih Gelombang --</option>
+                            @for ($i = 1; $i <= 3; $i++)
+                                <option value="{{ $i }}" {{ $spp->gelombang == $i ? 'selected' : '' }}>
+                                    Gelombang {{ $i }}
+                                </option>
+                            @endfor
+                        </select>
+
+                        {{-- VALUE ASLI DIKIRIM --}}
+                        <input type="hidden" name="gelombang" value="{{ $spp->gelombang }}">
+                    </div>
 
                             {{-- NAMA SPP --}}
                             <div class="md:col-span-2">

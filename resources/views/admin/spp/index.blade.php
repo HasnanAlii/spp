@@ -175,11 +175,11 @@
                                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                                 <div class="flex justify-center items-center gap-2">
                                                     {{-- EDIT (Opsional - Icon Only) --}}
-                                                    <a href="{{ route('spp.edit', $item->id) }}"
-                                                        class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                                                        title="Edit">
-                                                        <i data-feather="edit" class="h-5 w-5" aria-hidden="true"></i>
-                                                    </a>
+                                                        {{-- <a href="{{ route('spp.edit', $item->id) }}"
+                                                            class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                            title="Edit">
+                                                            <i data-feather="edit" class="h-5 w-5" aria-hidden="true"></i>
+                                                        </a> --}}
 
                                                     {{-- DELETE --}}
                                                     <form action="{{ route('spp.destroy', $item->id) }}" method="POST"

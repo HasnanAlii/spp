@@ -13,22 +13,12 @@ return new class extends Migration
     {
         Schema::create('spps', function (Blueprint $table) {
             $table->id();
-
-            // Nama SPP (contoh: SPP Januari 2025, SPP Tahunan 2025)
             $table->string('nama_spp');
-
-            // Tipe SPP: bulanan / tahunan / lainnya
             $table->enum('tipe', ['bulanan', 'tahunan', 'lainnya']);
-
-            // Nominal biaya SPP
             $table->integer('nominal');
-
-            // Tahun ajaran (contoh: 2024/2025)
+            $table->string('gelombang')->nullable();
             $table->string('tahun_ajaran')->nullable();
-
-            // Berlaku untuk kelas tertentu (10, 11, 12)
             $table->string('kelas')->nullable();
-
             $table->timestamps();
         });
     }

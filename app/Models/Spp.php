@@ -14,6 +14,7 @@ class Spp extends Model
         'nominal',
         'tahun_ajaran',
         'kelas',
+        'gelombang'
     ];
 
     public function sppSiswa()
