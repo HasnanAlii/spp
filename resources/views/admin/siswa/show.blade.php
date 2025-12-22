@@ -56,11 +56,28 @@
                                 </div>
 
                                 <div>
-                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Kelas</p>
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                                        {{ $siswa->kelas }}
-                                    </span>
-                                </div>
+    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+        Kelas
+    </p>
+
+    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium
+                 bg-blue-50 text-blue-700 border border-blue-100">
+        {{ $siswa->kelas }}
+    </span>
+
+    @if(strtolower($siswa->kelas) === 'x' || $siswa->kelas == '10')
+        <div class="mt-2">
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+                Gelombang
+            </p>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium
+                         bg-emerald-50 text-emerald-700 border border-emerald-100">
+                Gelombang {{ $siswa->gelombang ?? '-' }}
+            </span>
+        </div>
+    @endif
+</div>
+
                         
                                 <div>
                                     <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Nomor Telepon</p>

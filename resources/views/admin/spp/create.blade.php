@@ -73,14 +73,34 @@
                             {{-- KELAS --}}
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Kelas</label>
-                                <select name="kelas" 
-                                    class="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition duration-150 ease-in-out" required>
-                                    <option value="">-- Pilih Kelas --</option>
-                                    @foreach ($kelasList as $kls)
-                                        <option value="{{ $kls }}">{{ $kls }}</option>
-                                    @endforeach
+                              <select name="kelas"
+                                    id="kelasInput"
+                                    class="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition duration-150 ease-in-out"
+                                    required>
+                                <option value="">-- Pilih Kelas --</option>
+                                @foreach ($kelasList as $kls)
+                                    <option value="{{ $kls }}">{{ $kls }}</option>
+                                @endforeach
+                            </select>
+
+                            </div>
+                            {{-- GELOMBANG (KHUSUS UDT & KELAS X) --}}
+                            <div id="gelombangWrapper"
+                                class="hidden md:col-span-2 bg-emerald-50 p-4 rounded-xl border border-emerald-200">
+                                <label class="block text-sm font-semibold text-emerald-800 mb-1">
+                                    Gelombang Pendaftaran
+                                </label>
+
+                                <select name="gelombang"
+                                        id="gelombang"
+                                        class="w-full rounded-xl border-emerald-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 transition duration-150 ease-in-out">
+                                    <option value="">-- Pilih Gelombang --</option>
+                                    <option value="1">Gelombang 1</option>
+                                    <option value="2">Gelombang 2</option>
+                                    <option value="3">Gelombang 3</option>
                                 </select>
                             </div>
+
 
                             {{-- NAMA SPP --}}
                             <div class="md:col-span-2">
@@ -187,5 +207,43 @@
         });
     });
     </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tipeInput        = document.getElementById('tipeValue');
+        const kelasInput       = document.getElementById('kelasInput');
+        const gelombangWrapper = document.getElementById('gelombangWrapper');
+        const gelombangSelect  = document.getElementById('gelombang');
+
+        function toggleGelombang() {
+            const tipe  = tipeInput.value;
+            const kelas = kelasInput.value.trim().toLowerCase();
+
+            if (
+                tipe === 'tahunan' &&
+                (kelas === 'x' || kelas === '10')
+            ) {
+                gelombangWrapper.classList.remove('hidden');
+                gelombangSelect.setAttribute('required', 'required');
+            } else {
+                gelombangWrapper.classList.add('hidden');
+                gelombangSelect.removeAttribute('required');
+                gelombangSelect.value = '';
+            }
+        }
+
+        // 🔹 Pantau perubahan kelas
+        kelasInput.addEventListener('change', toggleGelombang);
+        kelasInput.addEventListener('input', toggleGelombang);
+
+        // 🔹 Pantau perubahan tipe (klik tombol)
+        document.querySelectorAll('.tipeBtn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                setTimeout(toggleGelombang, 50); // tunggu tipeValue terisi
+            });
+        });
+    });
+    </script>
+
 
 </x-app-layout>

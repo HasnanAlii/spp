@@ -276,11 +276,16 @@
                                                 @if(Auth::user()->role != 'siswa')
                                                     <td class="px-6 py-4 whitespace-nowrap text-center">
                                                         <div class="flex justify-center items-center gap-2">
-                                                            {{-- DETAIL --}}
                                                             <a href="{{ route('pembayaran.show', $pembayaran->id) }}"
                                                                 class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                                                                 title="Lihat Struk/Detail Pembayaran" aria-label="Detail pembayaran">
                                                                 <i data-feather="file-text" class="h-5 w-5" aria-hidden="true"></i>
+                                                            </a>
+                                                            {{-- DETAIL --}}
+                                                            <a href="{{ route('pembayaran.edit', $pembayaran->id) }}"
+                                                             class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                             title="Edit pembayaran" aria-label="Edit pembayaran">
+                                                             <i data-feather="edit" class="h-5 w-5" aria-hidden="true"></i>
                                                             </a>
                                                             {{-- HAPUS --}}
                                                             <form action="{{ route('pembayaran.destroy', $pembayaran->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data transaksi ini secara permanen?')">

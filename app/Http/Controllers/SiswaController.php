@@ -91,6 +91,7 @@ class SiswaController extends Controller
             'jenis_kelamin' => 'nullable|string|max:1',
             'tanggal_lahir' => 'nullable|date',
             'alamat' => 'nullable|string',
+            'gelombang' => 'nullable|string',
             'telp_orangtua' => 'nullable|string|max:20',
             'angkatan' => 'nullable|string|max:10',
         ]);
@@ -106,6 +107,7 @@ class SiswaController extends Controller
             'user_id' => $user->id,
             'kelas' => $request->kelas,
             'telp' => $request->telp,
+            'gelombang' => $request->gelombang,
             'status' => $request->status ?? 'aktif',
             'jenis_kelamin' => $request->jenis_kelamin,
             'tanggal_lahir' => $request->tanggal_lahir,
@@ -198,6 +200,7 @@ class SiswaController extends Controller
             'jenis_kelamin' => 'nullable|string|max:1',
             'tanggal_lahir' => 'nullable|date',
             'alamat' => 'nullable|string',
+            'gelombang' => 'nullable|string',
             'telp_orangtua' => 'nullable|string|max:20',
             'angkatan' => 'nullable|string|max:10',
         ]);
@@ -211,6 +214,7 @@ class SiswaController extends Controller
             'jenis_kelamin' => $request->jenis_kelamin,
             'tanggal_lahir' => $request->tanggal_lahir,
             'alamat' => $request->alamat,
+            'gelombang' => $request->gelombang,
             'telp_orangtua' => $request->telp_orangtua,
             'angkatan' => $request->angkatan,
         ]);

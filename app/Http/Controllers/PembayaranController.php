@@ -10,6 +10,7 @@ use App\Models\SppSiswa;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PembayaranController extends Controller
 {
@@ -182,34 +183,76 @@ class PembayaranController extends Controller
     /**
      * EDIT PEMBAYARAN
      */
-    public function edit(Pembayaran $pembayaran)
-    {
-        return view('admin.pembayaran.edit', [
-            'pembayaran' => $pembayaran,
-            'siswas'     => Siswa::all()
-        ]);
-    }
+public function edit(Pembayaran $pembayaran)
+{
+    $pembayaran->load(['siswa', 'sppSiswa']);
+
+    return view('admin.pembayaran.edit', [
+        'pembayaran' => $pembayaran,
+        'tagihans'   => SppSiswa::where('siswa_id', $pembayaran->siswa_id)->get()
+    ]);
+}
+
 
     /**
      * UPDATE DATA PEMBAYARAN
      */
-    public function update(Request $request, Pembayaran $pembayaran)
-    {
-        $request->validate([
-            'nominal_bayar' => 'required|numeric|min:1',
-            'tanggal'       => 'required|date',
-            'keterangan'    => 'nullable|string'
+public function update(Request $request, Pembayaran $pembayaran)
+{
+    $request->validate([
+        'spp_siswa_id'  => 'required|exists:spp_siswas,id',
+        'nominal_bayar' => 'required|numeric|min:1',
+        'tanggal_bayar' => 'required|date',
+        'keterangan'    => 'nullable|string'
+    ]);
+
+    DB::transaction(function () use ($request, $pembayaran) {
+
+        /* ============================
+           1. KEMBALIKAN TAGIHAN LAMA
+        ============================ */
+        $tagihanLama = SppSiswa::findOrFail($pembayaran->spp_siswa_id);
+        $tagihanLama->sisa_tagihan += $pembayaran->jumlah_bayar;
+        $tagihanLama->status = 'belum lunas';
+        $tagihanLama->save();
+
+        /* ============================
+           2. TAGIHAN BARU
+        ============================ */
+        $tagihanBaru = SppSiswa::findOrFail($request->spp_siswa_id);
+        $tagihanBaru->sisa_tagihan -= $request->nominal_bayar;
+
+        if ($tagihanBaru->sisa_tagihan <= 0) {
+            $tagihanBaru->sisa_tagihan = 0;
+            $tagihanBaru->status = 'lunas';
+        }
+
+        $tagihanBaru->save();
+
+        /* ============================
+           3. UPDATE PEMBAYARAN
+        ============================ */
+        $pembayaran->update([
+            'spp_siswa_id'  => $request->spp_siswa_id,
+            'jumlah_bayar'  => $request->nominal_bayar,
+            'tanggal_bayar' => $request->tanggal_bayar,
+            'keterangan'    => $request->keterangan,
         ]);
 
-        $pembayaran->update($request->only([
-            'nominal_bayar',
-            'tanggal',
-            'keterangan'
-        ]));
+        /* ============================
+           4. UPDATE KEUANGAN
+        ============================ */
+        Keuangan::where('id_pembayaran', $pembayaran->id)->update([
+            'jumlah'     => $request->nominal_bayar,
+            'keterangan' => "Pembayaran SPP - " . $tagihanBaru->nama_spp,
+            'arus_dana'  => 'masuk',
+        ]);
+    });
 
-        return redirect()->route('pembayaran.index')
-                         ->with('success', 'Data pembayaran berhasil diperbarui.');
-    }
+    return redirect()->route('pembayaran.index')
+        ->with('success', 'Data pembayaran berhasil diperbarui.');
+}
+
 
     /**
      * HAPUS PEMBAYARAN

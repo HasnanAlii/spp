@@ -20,23 +20,16 @@ class SiswaImport implements ToModel, WithHeadingRow, WithChunkReading, WithVali
 {
     use Importable, SkipsFailures, SkipsErrors;
 
-    // setiap baris akan di-handle oleh model() — kita lakukan transaction manual di sini
     public function model(array $row)
     {
-        // normalisasi kolom heading => pastikan header excel menggunakan nama-nama kecil sesuai ini
-        // nama, kelas, telp, jenis_kelamin, status, tanggal_lahir, alamat, telp_orangtua, angkatan, nis, password
 
-        // if nama or angkatan empty -> skip by returning null
         if (empty($row['nama']) || empty($row['angkatan'])) {
             return null;
         }
 
-        // generate atau gunakan nis
         $nis = isset($row['nis']) && $row['nis'] !== '' ? $row['nis'] : $this->generateNis($row['angkatan']);
 
-        // avoid duplicates
         if (User::where('nis', $nis)->exists()) {
-            // skip by returning null (or throw to collect failures)
             return null;
         }
 
@@ -71,6 +64,7 @@ class SiswaImport implements ToModel, WithHeadingRow, WithChunkReading, WithVali
                 'status' => $row['status'] ?? null,
                 'tanggal_lahir' => $row['tanggal_lahir'] ?? null,
                 'alamat' => $row['alamat'] ?? null,
+                'gelombang' => $row['gelombang'] ?? null,
                 'telp_orangtua' => $row['telp_orangtua'] ?? null,
                 'angkatan' => $row['angkatan'],
                 'user_id' => $user->id,
@@ -79,11 +73,10 @@ class SiswaImport implements ToModel, WithHeadingRow, WithChunkReading, WithVali
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
-            // rethrow agar SkipsOnError menangani atau collect error
             throw $e;
         }
 
-        return null; // kita tidak perlu mengembalikan model karena kita menyimpan manual
+        return null;
     }
 
     public function rules(): array
@@ -91,7 +84,6 @@ class SiswaImport implements ToModel, WithHeadingRow, WithChunkReading, WithVali
         return [
             'nama' => 'required|string',
             'angkatan' => 'required',
-            // tambahkan rules lain jika perlu
         ];
     }
 

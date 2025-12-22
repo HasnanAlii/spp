@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('kelas');
             $table->string('telp')->nullable();
+            $table->string('gelombang')->nullable();
             $table->string('status')->default('aktif');
             $table->enum('jenis_kelamin', ['L', 'P']);
             $table->date('tanggal_lahir')->nullable();

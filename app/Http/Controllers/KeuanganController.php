@@ -124,19 +124,25 @@ class KeuanganController extends Controller
         return view('admin.keuangan.edit', compact('keuangan'));
     }
 
-    public function update(Request $request, Keuangan $keuangan)
-    {
-        $request->validate([
-            'jumlah'     => 'required|numeric',
-            'keterangan' => 'nullable|string',
-            'arus_dana'  => 'required|in:masuk,keluar',
-        ]);
+public function update(Request $request, Keuangan $keuangan)
+{
+    $request->validate([
+        'jumlah'     => 'required|numeric|min:0',
+        'arus_dana'  => 'required|in:masuk,keluar',
+        'keterangan' => 'nullable|string|max:255',
+    ]);
 
-        $keuangan->update($request->all());
+    $keuangan->update([
+        'jumlah'     => $request->jumlah,
+        'arus_dana'  => $request->arus_dana,
+        'keterangan' => $request->keterangan,
+    ]);
 
-        return redirect()->route('keuangan.index')
-                         ->with('success', 'Data Keuangan berhasil diperbarui.');
-    }
+    return redirect()->route('keuangan.index')
+        ->with('success', 'Data keuangan berhasil diperbarui.');
+}
+
+
 
     public function destroy(Keuangan $keuangan)
     {

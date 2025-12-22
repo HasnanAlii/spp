@@ -50,10 +50,37 @@
                                 {{-- KELAS --}}
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-1">Kelas</label>
-                                    <input type="text" name="kelas" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition duration-150 ease-in-out" 
-                                           value="{{ old('kelas') }}" placeholder="Masukkan kelas" required>
+                                   
+                                   <input type="text"
+                                    name="kelas"
+                                    id="kelasInput"
+                                    class="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    value="{{ old('kelas') }}"
+                                    placeholder="Masukkan kelas"
+                                    required>
+                                   
                                     @error('kelas') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                                 </div>
+                                
+                                {{-- GELOMBANG (KHUSUS KELAS X) --}}
+                                <div id="gelombangWrapper" class="hidden">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                                        Gelombang Pendaftaran
+                                    </label>
+                                    <select name="gelombang"
+                                            id="gelombang"
+                                            class="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition duration-150 ease-in-out">
+                                        <option value="">-- Pilih Gelombang --</option>
+                                        <option value="1" {{ old('gelombang') == '1' ? 'selected' : '' }}>Gelombang 1</option>
+                                        <option value="2" {{ old('gelombang') == '2' ? 'selected' : '' }}>Gelombang 2</option>
+                                        <option value="3" {{ old('gelombang') == '3' ? 'selected' : '' }}>Gelombang 3</option>
+                                    </select>
+
+                                    @error('gelombang')
+                                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
 
                                 {{-- NO TELP --}}
                                 <div>
@@ -193,5 +220,32 @@
         }
     });
     </script>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const kelasInput = document.getElementById("kelasInput");
+    const gelombangWrapper = document.getElementById("gelombangWrapper");
+    const gelombangSelect = document.getElementById("gelombang");
+
+    function toggleGelombang() {
+        const kelas = kelasInput.value.trim().toLowerCase();
+
+        if (kelas === "x" || kelas === "10") {
+            gelombangWrapper.classList.remove("hidden");
+            gelombangSelect.setAttribute("required", "required");
+        } else {
+            gelombangWrapper.classList.add("hidden");
+            gelombangSelect.removeAttribute("required");
+            gelombangSelect.value = "";
+        }
+    }
+
+    // cek saat load (penting untuk old input)
+    toggleGelombang();
+
+    // cek saat user mengetik
+    kelasInput.addEventListener("input", toggleGelombang);
+});
+</script>
+
 
 </x-app-layout>

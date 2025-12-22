@@ -13,7 +13,7 @@ class Siswa extends Model
     
     protected $fillable = [
         'nama','user_id', 'kelas', 'telp', 'status', 'jenis_kelamin',
-        'tanggal_lahir', 'alamat', 'telp_orangtua', 'angkatan'
+        'tanggal_lahir', 'alamat', 'telp_orangtua', 'angkatan','gelombang'
     ];
 
     public function spp()
@@ -29,6 +29,11 @@ class Siswa extends Model
     {
         return $this->hasOne(User::class, 'name', 'nama');
     }
+    public function isKelasX()
+{
+    return in_array(strtolower($this->kelas), ['x', '10']);
+}
+
 
 
 

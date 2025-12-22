@@ -9,6 +9,7 @@ use App\Models\SppSiswa;
 use App\Models\Siswa;
 use App\Models\Spp;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -52,7 +53,9 @@ class SppController extends Controller
             'nama_spp' => 'required|string',
             'tipe' => 'required|in:bulanan,tahunan,lainnya',
             'nominal' => 'required|numeric|min:0',
-            'tahun_ajaran' => 'nullable|string'
+            'tahun_ajaran' => 'nullable|string',
+            'gelombang'     => 'required_if:kelas,X,10|nullable|string',
+
         ]);
 
         // 1. Simpan sebagai template
@@ -65,7 +68,18 @@ class SppController extends Controller
         ]);
 
         // 2. Ambil seluruh siswa terkait kelas
-        $siswaList = Siswa::where('kelas', $request->kelas)->get();
+      $siswaQuery = Siswa::where('kelas', $request->kelas);
+
+// 🔹 Jika kelas X / 10, filter juga berdasarkan gelombang
+if (
+    in_array(strtolower($request->kelas), ['x', '10']) &&
+    $request->filled('gelombang')
+) {
+    $siswaQuery->where('gelombang', $request->gelombang);
+}
+
+$siswaList = $siswaQuery->get();
+
         $index = 0;
         foreach ($siswaList as $siswa) {
 
@@ -161,6 +175,82 @@ Terima kasih 🙏";
     //     );
     // }
 
+public function edit($id)
+{
+    $spp = Spp::findOrFail($id);
+
+    // daftar kelas untuk dropdown
+    $kelasList = Siswa::select('kelas')->distinct()->pluck('kelas');
+
+    return view('admin.spp.edit', compact('spp', 'kelasList'));
+}
+public function update(Request $request, $id)
+{
+    $spp = Spp::findOrFail($id);
+
+    $request->validate([
+        'kelas'         => 'required|string',
+        'nama_spp'      => 'required|string',
+        'tipe'          => 'required|in:bulanan,tahunan,lainnya',
+        'nominal'       => 'required|numeric|min:0',
+        'tahun_ajaran'  => 'nullable|string',
+        'gelombang'     => 'required_if:kelas,X,10|nullable|string',
+
+    ]);
+
+    /* =====================================================
+       1. UPDATE SPP MASTER
+    ===================================================== */
+    $spp->update([
+        'nama_spp'     => $request->nama_spp,
+        'tipe'         => $request->tipe,
+        'nominal'      => $request->nominal,
+        'tahun_ajaran' => $request->tahun_ajaran,
+        'kelas'        => $request->kelas,
+        'gelombang'    => $request->gelombang,
+    ]);
+
+    /* =====================================================
+       2. AMBIL SISWA TARGET
+    ===================================================== */
+    $siswaQuery = Siswa::where('kelas', $request->kelas);
+
+    if (
+        in_array(strtolower($request->kelas), ['x', '10']) &&
+        $request->filled('gelombang')
+    ) {
+        $siswaQuery->where('gelombang', $request->gelombang);
+    }
+
+    $siswaIds = $siswaQuery->pluck('id');
+
+    /* =====================================================
+       3. UPDATE TAGIHAN SPP SISWA
+       (TIDAK MENGUBAH STATUS LUNAS)
+    ===================================================== */
+    SppSiswa::whereIn('siswa_id', $siswaIds)
+        ->where('nama_spp', $spp->getOriginal('nama_spp'))
+        ->where('tipe', $spp->getOriginal('tipe'))
+        ->where('tahun_ajaran', $spp->getOriginal('tahun_ajaran'))
+        ->update([
+            'nama_spp'      => $request->nama_spp,
+            'tipe'          => $request->tipe,
+            'total_tagihan' => $request->nominal,
+
+            // sisa_tagihan hanya diupdate jika belum lunas
+            'sisa_tagihan'  => DB::raw("
+                CASE 
+                    WHEN status = 'belum lunas' 
+                    THEN {$request->nominal} 
+                    ELSE sisa_tagihan 
+                END
+            "),
+        ]);
+
+    return redirect()
+        ->route('spp.index')
+        ->with('success', 'Data SPP berhasil diperbarui.');
+}
 
 
     public function destroy($id)
