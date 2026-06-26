@@ -1,59 +1,343 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SPP Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Laravel-based school fee management application for managing students, SPP billing, payments, financial reports, and student payment visibility. The system is designed around two main roles: administrators who manage operational data and students who can view their own SPP profile and outstanding bills.
 
-## About Laravel
+## Overview
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+This project helps schools manage SPP and related financial workflows in one place. Administrators can maintain student records, generate SPP bills for selected classes, record payments, monitor cash flow, import student data from Excel or CSV files, and export PDF reports. Students can log in using their NIS and view their own billing information.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Main Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Role-based access control for `admin` and `siswa` users.
+- Student data management with NIS-based login accounts.
+- Student filtering by class, generation year, and keyword search.
+- Excel/CSV student import using Laravel Excel.
+- Bulk class promotion from X to XI, XI to XII, and XII to Alumni.
+- SPP master data management for monthly, yearly, and other billing types.
+- Automatic bill generation for students in a selected class.
+- Optional wave-based billing support for class X students.
+- WhatsApp notification queue for newly generated SPP bills.
+- Payment recording with automatic outstanding balance updates.
+- Automatic financial income entry when a payment is recorded.
+- Financial cash flow management for income and expenses.
+- Daily, monthly, and yearly report filters.
+- PDF export for payment and financial reports.
+- Authentication scaffold based on Laravel Breeze.
 
-## Learning Laravel
+## Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- PHP `^8.2`
+- Laravel `^12.0`
+- MySQL or compatible database
+- Laravel Breeze
+- Spatie Laravel Permission
+- Laravel Excel
+- Laravel DomPDF
+- Tailwind CSS
+- Alpine.js
+- Vite
+- Pest / PHPUnit
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Project Structure
 
-## Laravel Sponsors
+```text
+app/
+  Console/Commands/ImportSiswaCommand.php
+  Http/Controllers/
+  Imports/SiswaImport.php
+  Jobs/SendWaNotificationJob.php
+  Models/
+database/
+  migrations/
+  seeders/
+resources/
+  css/
+  js/
+  views/
+routes/
+  web.php
+  auth.php
+tests/
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Key modules:
 
-### Premium Partners
+- `SiswaController` handles student CRUD, import, student profile, and class promotion.
+- `SppController` handles SPP master records and mass billing generation.
+- `PembayaranController` handles payment transactions and payment reports.
+- `KeuanganController` handles financial cash flow and financial reports.
+- `NotificationController` handles in-app notification reads.
+- `SendWaNotificationJob` sends WhatsApp billing notifications through the Fonnte API.
+- `ImportSiswaCommand` imports student data from Excel or CSV through the command line.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Requirements
 
-## Contributing
+Make sure these tools are installed before setting up the project:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- PHP 8.2 or newer
+- Composer
+- Node.js and npm
+- MySQL or MariaDB
+- Git
 
-## Code of Conduct
+Recommended PHP extensions:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- BCMath
+- Ctype
+- cURL
+- DOM
+- Fileinfo
+- JSON
+- Mbstring
+- OpenSSL
+- PDO
+- PDO MySQL
+- Tokenizer
+- XML
+- Zip
 
-## Security Vulnerabilities
+## Installation
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Clone the repository and enter the project directory:
+
+```bash
+git clone <repository-url>
+cd spp
+```
+
+Install PHP dependencies:
+
+```bash
+composer install
+```
+
+Install JavaScript dependencies:
+
+```bash
+npm install
+```
+
+Create the environment file:
+
+```bash
+cp .env.example .env
+```
+
+Generate the application key:
+
+```bash
+php artisan key:generate
+```
+
+Create a database, then update these values in `.env`:
+
+```env
+APP_NAME="SPP Management System"
+APP_URL=http://127.0.0.1:8000
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=spp
+DB_USERNAME=root
+DB_PASSWORD=
+
+QUEUE_CONNECTION=database
+SESSION_DRIVER=database
+CACHE_STORE=database
+```
+
+Run database migrations:
+
+```bash
+php artisan migrate
+```
+
+Seed the default roles and users:
+
+```bash
+php artisan db:seed
+```
+
+Build frontend assets:
+
+```bash
+npm run build
+```
+
+Start the Laravel development server:
+
+```bash
+php artisan serve
+```
+
+For local development with Vite hot reload, run this in another terminal:
+
+```bash
+npm run dev
+```
+
+The application will be available at:
+
+```text
+http://127.0.0.1:8000
+```
+
+## Default Accounts
+
+The default seeder creates these users:
+
+| Role | NIS | Password |
+| --- | --- | --- |
+| Admin | `5599` | `password` |
+| Siswa | `2024001` | `password` |
+
+The application uses NIS as the main login identifier.
+
+## Running All Development Services
+
+The project includes a Composer script that can run the Laravel server, queue listener, logs, and Vite together:
+
+```bash
+composer run dev
+```
+
+This command starts:
+
+- `php artisan serve`
+- `php artisan queue:listen --tries=1`
+- `php artisan pail --timeout=0`
+- `npm run dev`
+
+## Queue Worker
+
+This project uses database queues for background jobs, including WhatsApp billing notifications. If you do not use `composer run dev`, start the queue worker manually:
+
+```bash
+php artisan queue:work
+```
+
+Failed queue jobs can be inspected in the `failed_jobs` table.
+
+## WhatsApp Notification Setup
+
+New SPP billing records can dispatch WhatsApp notification jobs through the Fonnte API. The current job sends requests to:
+
+```text
+https://api.fonnte.com/send
+```
+
+The API token is configured through `.env` and read from `config/services.php`. Keep this value out of source code and use a different token for each environment.
+
+Environment variables:
+
+```env
+FONNTE_TOKEN=your-fonnte-token
+FONNTE_URL=https://api.fonnte.com/send
+```
+
+## Student Import
+
+Student data can be imported from the web interface or through Artisan.
+
+Command-line import:
+
+```bash
+php artisan siswa:import storage/app/import/siswa.xlsx
+```
+
+Supported file types are handled by Laravel Excel, including `.xlsx`, `.xls`, and `.csv`.
+
+## PDF Reports
+
+The application can export:
+
+- Payment reports from the payment module.
+- Financial cash flow reports from the finance module.
+
+Reports support daily, monthly, and yearly filters depending on the selected page.
+
+## Main Routes
+
+| Area | Route Prefix | Access |
+| --- | --- | --- |
+| Dashboard | `/dashboard` | Authenticated users |
+| Profile | `/profile` | Authenticated users |
+| Admin students | `/admin/siswa` | Admin |
+| Admin SPP | `/admin/spp` | Admin |
+| Admin payments | `/admin/pembayaran` | Admin |
+| Admin finance | `/admin/keuangan` | Admin |
+| Student SPP profile | `/siswa/spp` | Siswa |
+| Notifications | `/notifications` | Authenticated users |
+
+## Testing
+
+Run the automated test suite:
+
+```bash
+php artisan test
+```
+
+Or use the Composer script:
+
+```bash
+composer test
+```
+
+## Useful Commands
+
+Clear cached configuration:
+
+```bash
+php artisan config:clear
+```
+
+Clear application cache:
+
+```bash
+php artisan cache:clear
+```
+
+Run migrations from scratch and seed default data:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+Build production assets:
+
+```bash
+npm run build
+```
+
+Format PHP code with Laravel Pint:
+
+```bash
+./vendor/bin/pint
+```
+
+## Deployment Notes
+
+For production deployment:
+
+- Set `APP_ENV=production`.
+- Set `APP_DEBUG=false`.
+- Configure a production database.
+- Configure a persistent queue worker.
+- Run `php artisan migrate --force`.
+- Run `npm run build`.
+- Configure the web server document root to the `public` directory.
+- Store third-party API tokens in `.env`, not in source code.
+- Ensure `storage` and `bootstrap/cache` are writable by the web server user.
+
+Common production optimization commands:
+
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is built on Laravel. Review the repository license or project owner policy before redistribution or commercial use.

@@ -29,6 +29,12 @@ class SendWaNotificationJob implements ShouldQueue
 
     public function handle()
     {
+        $token = config('services.fonnte.token');
+
+        if (empty($token)) {
+            throw new \RuntimeException('FONNTE_TOKEN is not configured.');
+        }
+
         $raw = $this->siswa->telp ?? '';
 
         // Normalisasi nomor sederhana
@@ -49,13 +55,12 @@ class SendWaNotificationJob implements ShouldQueue
             'countryCode' => '62',
         ];
 
-
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'L9PaGYokqbue5GHechJR',
+                'Authorization' => $token,
                 'Accept' => 'application/json',
             ])->timeout(30)
-            ->post('https://api.fonnte.com/send', $payload);
+            ->post(config('services.fonnte.url'), $payload);
 
 
         } catch (\Throwable $e) {
